@@ -1,0 +1,57 @@
+import isEmpty from "lodash/isEmpty";
+import Link from "next/link";
+import React from "react";
+import { FeedbackType } from "../../..";
+import ArrowUpIcon from "../../../public/assets/shared/icon-arrow-up.svg";
+import CommentIcon from "../../../public/assets/shared/icon-comments.svg";
+import Chip from "../Chip/Chip";
+import CustomCard from "../UI/CustomCard";
+
+const FeedbackCard: React.FC<Omit<FeedbackType, "status">> = ({
+  _id,
+  title,
+  description,
+  category,
+  upVotes,
+  comments,
+}) => {
+  // const { onRedirectForUnAuthorizeduser, isAuthenticated } = useIsAuthorized();
+
+  const totalComments = isEmpty(comments) ? 0 : comments.length;
+  const totalVotes = isEmpty(upVotes) ? 0 : upVotes.length;
+  const feedbackHref = `/feedback-detail/${_id}`;
+
+  // const handleUpvotes = () => {
+  //   if (!isAuthenticated) {
+  //     onRedirectForUnAuthorizeduser();
+  //     return;
+  //   }
+  // };
+
+  return (
+    <CustomCard className="relative mb-4 last:mb-0 grid grid-cols-[3fr,1fr] md:grid-cols-[50px_3fr_100px] items-center gap-4 md:gap-10">
+      <Chip
+        className="gap-2 body-three-text md:flex-col justify-center items-center self-start justify-self-start md:justify-self-auto"
+        // onClick={handleUpvotes}
+      >
+        <ArrowUpIcon className="md:mt-1 [&>path]:!stroke-current transition-all duration-75 ease-in" />
+        <span>{totalVotes}</span>
+      </Chip>
+      <div className="flex flex-col col-span-full row-span-full  md:col-auto md:row-auto justify-center items-start gap-1">
+        <Link href={feedbackHref}>
+          <h3 className="tertiary-text first-letter:capitalize text-american-blue-100 hover:text-indigo-1000 transition-all ease-in-out cursor-pointer">
+            {title}
+          </h3>
+        </Link>
+        <p className="body-text">{description}</p>
+        <Chip className="mt-2 pointer-events-none">{category}</Chip>
+      </div>
+      <div className="flex items-center gap-2 justify-self-end">
+        <CommentIcon />
+        <span className="font-semibold">{totalComments}</span>
+      </div>
+    </CustomCard>
+  );
+};
+
+export default FeedbackCard;

@@ -2,26 +2,127 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
+@layer base {
+  body {
+    font-family: "Jost", sans-serif !important;
+    @apply text-[13px] md:text-base font-normal tracking-normal text-dark-blue-gray;
+    background: theme(colors.ghost-white);
+  }
+  h1 {
+    @apply text-lg md:text-2xl tracking-tighter font-bold;
+  }
+  h2 {
+    @apply text-xl tracking-tighter font-bold;
+  }
+  h3 {
+    @apply text-[0.8125rem] md:text-lg tracking-tighter font-bold;
+  }
+  h4 {
+    @apply text-[0.8125rem]  md:text-sm tracking-tighter font-bold;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: theme(colors.indigo-1000);
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+  /* Works on Chrome, Edge, and Safari */
+  *::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: theme(colors.alice-blue);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: theme(colors.indigo-1000);
+    border-radius: 20px;
+    border: 3px solid theme(colors.indigo-1000);
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+@layer utilities {
+  .btn-base {
+    @apply text-[0.8125rem] font-bold px-[52px] py-2 md:text-sm;
+  }
+  .btn-primary {
+    @apply btn-base bg-purple-1000 rounded-lg text-white hover:bg-purple-light transition-all ease-in;
+  }
+  .btn-secondary {
+    @apply btn-base bg-indigo-1000 rounded-lg text-white hover:bg-indigo-light transition-all ease-in;
+  }
+  .btn-tertiary {
+    @apply btn-base bg-american-blue-100 rounded-lg text-white hover:bg-american-blue-light transition-all ease-in;
+  }
+  .btn-danger {
+    @apply btn-base bg-jasper rounded-lg text-white hover:bg-jasper-light transition-all ease-in;
+  }
+  .btn-back-primary {
+    @apply btn-base flex items-center bg-transparent hover:underline text-dark-blue-gray border-none transition-all ease-in;
+  }
+  .btn-back-secondary {
+    @apply btn-base flex items-center justify-center rounded-lg text-white bg-american-blue-200 hover:underline transition-all ease-in;
+  }
+
+  .btn-edit {
+    @apply btn-base bg-indigo-1000 rounded-lg text-white hover:bg-indigo-1001 transition-all ease-in;
+  }
+  .btn-reply {
+    @apply btn-base flex items-center bg-transparent !p-0 text-indigo-1000 border-none hover:underline transition-all ease-in;
+  }
+
+  .input-label {
+    @apply text-sm font-bold text-american-blue-100 inline-block mb-1;
+  }
+  .input-description {
+    @apply block text-sm font-normal text-dark-blue-gray mb-4;
+  }
+
+  .body-one-text {
+    @apply text-[0.8125rem] md:text-base font-normal tracking-normal;
+  }
+
+  .body-two-text {
+    @apply text-[15px] font-normal tracking-normal;
+  }
+  .body-three-text {
+    @apply text-[13px] font-semibold tracking-normal;
+  }
+  .primary-text {
+    @apply text-lg md:text-2xl tracking-tighter font-bold;
+  }
+  .secondary-text {
+    @apply text-xl tracking-tighter font-bold;
+  }
+  .tertiary-text {
+    @apply text-[0.8125rem] md:text-lg tracking-tighter font-bold;
+  }
+  .quaternary-text {
+    @apply text-[0.8125rem]  md:text-sm tracking-tighter font-bold;
+  }
+  .body-text {
+    @apply text-[13px] md:text-base font-normal tracking-normal text-dark-blue-gray;
+  }
+  .border-color-inprogress {
+    @apply border-purple-1000;
+  }
+  .border-color-live {
+    @apply border-maya-blue;
+  }
+  .border-color-planned {
+    @apply border-vivid-tangerine;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .loader-animation {
+    @apply before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent
+    overflow-hidden relative;
+  }
 }
