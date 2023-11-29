@@ -1,24 +1,22 @@
-import isEmpty from "lodash/isEmpty";
-import Link from "next/link";
+import clsx from "clsx";
+import { gte, lte } from "lodash";
 import React from "react";
-import { FeedbackType } from "../../..";
+import { FeedbackSummary } from "../../..";
 import ArrowUpIcon from "../../../public/assets/shared/icon-arrow-up.svg";
 import CommentIcon from "../../../public/assets/shared/icon-comments.svg";
 import Chip from "../Chip/Chip";
 import CustomCard from "../UI/CustomCard";
 
-const FeedbackCard: React.FC<Omit<FeedbackType, "status">> = ({
+const FeedbackCard: React.FC<FeedbackSummary> = ({
   _id,
   title,
   description,
   category,
-  upVotes,
-  comments,
+  totalVotes,
+  totalComments,
 }) => {
   // const { onRedirectForUnAuthorizeduser, isAuthenticated } = useIsAuthorized();
 
-  const totalComments = isEmpty(comments) ? 0 : comments.length;
-  const totalVotes = isEmpty(upVotes) ? 0 : upVotes.length;
   const feedbackHref = `/feedback-detail/${_id}`;
 
   // const handleUpvotes = () => {
@@ -38,13 +36,20 @@ const FeedbackCard: React.FC<Omit<FeedbackType, "status">> = ({
         <span>{totalVotes}</span>
       </Chip>
       <div className="flex flex-col col-span-full row-span-full  md:col-auto md:row-auto justify-center items-start gap-1">
-        <Link href={feedbackHref}>
-          <h3 className="tertiary-text first-letter:capitalize text-american-blue-100 hover:text-indigo-1000 transition-all ease-in-out cursor-pointer">
-            {title}
-          </h3>
-        </Link>
+        {/* <Link href={feedbackHref}> */}
+        <h3 className="tertiary-text first-letter:capitalize text-american-blue-100 hover:text-indigo-1000 transition-all ease-in-out cursor-pointer">
+          {title}
+        </h3>
+        {/* </Link> */}
         <p className="body-text">{description}</p>
-        <Chip className="mt-2 pointer-events-none">{category}</Chip>
+        <Chip
+          className={clsx("mt-2 pointer-events-none", {
+            capitalize: gte(category?.length, 3),
+            uppercase: lte(category?.length, 2),
+          })}
+        >
+          {category}
+        </Chip>
       </div>
       <div className="flex items-center gap-2 justify-self-end">
         <CommentIcon />

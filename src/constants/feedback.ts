@@ -1,6 +1,6 @@
 import { FeedbackType } from "../..";
 
-export const category = ["All", "UI", "UX", "Enhancement", "Bug", "Feature"];
+export const category = ["all", "ui", "ux", "enhancement", "bug", "feature"];
 
 export const status: FeedbackType["status"][] = [
   "planned",

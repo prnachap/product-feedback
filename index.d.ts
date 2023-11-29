@@ -22,10 +22,19 @@ type FeedbackType = {
   title: string;
   description: string;
   category: string;
-  upVotes: number[];
+  totalVotes: number;
+  totalComments: number;
+  upvotes: string[];
   comments: CommentType[];
   status: "planned" | "in-progress" | "live";
 };
+
+type RoadMapStatsType = {
+  _id: "planned" | "in-progress" | "live";
+  count: number;
+};
+
+type FeedbackSummary = Omit<FeedbackType, "status" | "comments" | "upvotes">;
 
 type FeedbackApiResType = FeedbackType & { comments: CommentType[] };
 

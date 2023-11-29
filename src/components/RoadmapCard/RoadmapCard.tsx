@@ -3,7 +3,7 @@ import { status } from "../../constants";
 import Status from "../Status/Status";
 import CustomCard from "../UI/CustomCard";
 
-const RoadmapCard: React.FC = () => {
+const RoadmapCard = async () => {
   const renderStatus = () => {
     return status.map((status) => (
       <Status key={status} name={status} count={1} />

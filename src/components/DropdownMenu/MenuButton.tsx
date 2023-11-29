@@ -1,4 +1,7 @@
+"use client";
+
 import { AnimatePresence } from "framer-motion";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useRef, useState } from "react";
 import { useClickOutside } from "../../hooks/useClickOutside";
 import AnimatedDropdownIcon from "../AnimatedSvgIcons/AnimatedDropdownIcon";
@@ -12,19 +15,29 @@ type SortByDropdownProps<T> = {
 function SortByDropdown<T extends string | number>({
   options,
 }: SortByDropdownProps<T>) {
-  const [selectedMenuOption, setSelectedMenuOption] = useState(options[0]);
+  const [selectedMenuOption, setSelectedMenuOption] = useState(options?.[0]);
   const [openMenu, setOpenMenu] = useState(false);
   const dropdownRef = useRef(null);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+  const animate = openMenu ? "animate" : "initial";
+  const categoryParams = searchParams.get("category") ?? "all";
 
-  const onClickOutside = () => setOpenMenu(false);
   useClickOutside({ ref: dropdownRef, onClickOutside });
 
-  const animate = openMenu ? "animate" : "initial";
-
+  function onClickOutside() {
+    setOpenMenu(false);
+  }
   const handleMenu = () => setOpenMenu(!openMenu);
+
   const handleMenuList = (option: T) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("category", categoryParams);
+    params.set("sort", option as string);
     setSelectedMenuOption(option);
     setOpenMenu(false);
+    replace(`${pathname}?${params}`);
   };
 
   const renderDropdownList = () => {

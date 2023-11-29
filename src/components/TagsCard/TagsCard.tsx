@@ -1,11 +1,41 @@
+"use client";
+
+import clsx from "clsx";
+import { gte, lt } from "lodash";
+import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { category } from "../../constants";
 import Chip from "../Chip/Chip";
 import CustomCard from "../UI/CustomCard";
 
-const TagsCard: React.FC = () => {
+const TagsCard = () => {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const params = new URLSearchParams();
+  const sortParams = searchParams.get("sort") ?? "most upvotes";
+
   const renderTags = () => {
     return category.map((tag) => {
-      return <Chip key={tag}>{tag}</Chip>;
+      params.set("category", tag);
+      params.set("sort", sortParams);
+      const isActive = searchParams?.get("category")
+        ? tag === searchParams.get("category")
+        : tag === "all";
+
+      return (
+        <Link href={`${pathname}?${params.toString()}`} key={tag}>
+          <Chip
+            key={tag}
+            className={clsx({
+              capitalize: gte(tag?.length, 3),
+              uppercase: lt(tag?.length, 3),
+            })}
+            isActive={isActive}
+          >
+            {tag}
+          </Chip>
+        </Link>
+      );
     });
   };
 
