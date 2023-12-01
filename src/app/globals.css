@@ -113,12 +113,20 @@
     @apply border-vivid-tangerine;
   }
 
+  .error-text {
+    @apply text-[14px] font-normal first-letter:capitalize mt-1 !text-jasper;
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
   .no-scrollbar {
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
+  }
+
+  .customInput {
+    @apply w-full p-4 rounded-md text-sm text-american-blue-100 font-normal outline-none border-[1px] border-transparent hover:border-indigo-1000 transition-all;
   }
 
   .loader-animation {

@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { gte, lte } from "lodash";
+import Link from "next/link";
 import React from "react";
 import { FeedbackSummary } from "../../..";
 import ArrowUpIcon from "../../../public/assets/shared/icon-arrow-up.svg";
@@ -17,7 +18,7 @@ const FeedbackCard: React.FC<FeedbackSummary> = ({
 }) => {
   // const { onRedirectForUnAuthorizeduser, isAuthenticated } = useIsAuthorized();
 
-  const feedbackHref = `/feedback-detail/${_id}`;
+  const feedbackHref = `/feedback/${_id}`;
 
   // const handleUpvotes = () => {
   //   if (!isAuthenticated) {
@@ -36,11 +37,11 @@ const FeedbackCard: React.FC<FeedbackSummary> = ({
         <span>{totalVotes}</span>
       </Chip>
       <div className="flex flex-col col-span-full row-span-full  md:col-auto md:row-auto justify-center items-start gap-1">
-        {/* <Link href={feedbackHref}> */}
-        <h3 className="tertiary-text first-letter:capitalize text-american-blue-100 hover:text-indigo-1000 transition-all ease-in-out cursor-pointer">
-          {title}
-        </h3>
-        {/* </Link> */}
+        <Link href={feedbackHref}>
+          <h3 className="tertiary-text first-letter:capitalize text-american-blue-100 hover:text-indigo-1000 transition-all ease-in-out cursor-pointer">
+            {title}
+          </h3>
+        </Link>
         <p className="body-text">{description}</p>
         <Chip
           className={clsx("mt-2 pointer-events-none", {

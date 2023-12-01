@@ -1,6 +1,7 @@
 import { ERROR_MESSAGES } from "@/constants/errorMessages";
 import clientPromise from "@/lib/mongodb";
 import { isEqual } from "lodash";
+import { ObjectId } from "mongodb";
 import { unstable_noStore as noStore } from "next/cache";
 import { FeedbackSummary, RoadMapStatsType } from "../..";
 
@@ -62,6 +63,34 @@ export async function getFeedbackSummary({
         },
       ])
       .toArray();
+  } catch (error) {
+    throw new Error(ERROR_MESSAGES.SERVER_ERROR);
+  }
+}
+
+export async function getFeedbackById({ id }: { id: string }) {
+  noStore();
+
+  try {
+    const client = await clientPromise;
+    const collection = client.db("product-feedback").collection("feedbacks");
+    return await collection
+      .aggregate<FeedbackSummary>([
+        { $match: { _id: new ObjectId(id) } },
+        {
+          $addFields: {
+            totalComments: { $size: "$comments" },
+            totalVotes: { $size: "$upvotes" },
+          },
+        },
+        {
+          $project: {
+            comments: 0,
+            upvotes: 0,
+          },
+        },
+      ])
+      .next();
   } catch (error) {
     throw new Error(ERROR_MESSAGES.SERVER_ERROR);
   }

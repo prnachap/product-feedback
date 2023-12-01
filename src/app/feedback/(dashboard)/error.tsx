@@ -7,15 +7,8 @@ import NavbarMobile from "@/components/Navbar/NavbarMobile";
 import RoadmapCard from "@/components/RoadmapCard/RoadmapCard";
 import TagsCard from "@/components/TagsCard/TagsCard";
 import LayoutContainer from "@/components/UI/LayoutContainer";
-import React from "react";
 
-const Error = ({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) => {
+const Error = ({ error }: { error: Error & { digest?: string } }) => {
   return (
     <LayoutContainer className="flex flex-col sticky z-40 md:gap-8 lg:flex-row">
       <div className="hidden z-40 sticky md:top-10 md:flex md:flex-row md:justify-between md:gap-3 lg:top-14 lg:max-h-[30rem] lg:flex-col lg:gap-5">
@@ -32,9 +25,7 @@ const Error = ({
           <EmptyFeedback
             title={error.message}
             description="please try again later"
-            isErrorButton={true}
-            reset={reset}
-          />
+          ></EmptyFeedback>
         </div>
       </div>
     </LayoutContainer>
