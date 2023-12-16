@@ -1,55 +1,88 @@
-import Box from "@mui/material/Box";
-import { Form, Formik, FormikHelpers, FormikProps } from "formik";
-import * as Yup from "yup";
+"use client";
+
+import { postRepliesToComment } from "@/lib/actions";
+import { CommentFormSchema } from "@/lib/schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { z } from "zod";
 import StyledButton from "../Button/StyledButton";
-import CustomInput from "./CustomInput";
+type CommentFormInput = z.TypeOf<typeof CommentFormSchema>;
 
-export const INITIAL_VALUE = {
-  reply: "",
-};
-const validationSchema = Yup.object().shape({
-  reply: Yup.string().required("Can't be empty"),
-});
+type ReplyBoxProps = { commentId: string };
+const ReplyBox = ({ commentId }: ReplyBoxProps) => {
+  const {
+    register,
+    reset,
+    formState: { errors, isSubmitting },
+    handleSubmit,
+  } = useForm<CommentFormInput>({
+    resolver: zodResolver(CommentFormSchema),
+  });
+  const [formSubmissionStatus, setFormSubmissionStatus] = useState<{
+    success: boolean;
+    error: string | null;
+  }>({ success: false, error: null });
+  const { feedbackid } = useParams<{ feedbackid: string }>();
 
-type ReplyBoxProps = {
-  feedbackId: string;
-  commentId: string;
-  handleSubmit: (
-    values: typeof INITIAL_VALUE,
-    action: FormikHelpers<typeof INITIAL_VALUE>
-  ) => void;
-};
+  const onSubmit: SubmitHandler<CommentFormInput> = async (data) => {
+    setFormSubmissionStatus({
+      ...formSubmissionStatus,
+      error: null,
+      success: false,
+    });
+    const result = await postRepliesToComment({
+      feedbackId: feedbackid,
+      commentId,
+      content: data.comment,
+    });
+    setFormSubmissionStatus({
+      ...formSubmissionStatus,
+      ...result,
+    });
+    reset();
+  };
 
-const ReplyBox: React.FC<ReplyBoxProps> = ({
-  feedbackId,
-  commentId,
-  handleSubmit,
-}) => {
   return (
-    <Formik
-      initialValues={INITIAL_VALUE}
-      validationSchema={validationSchema}
-      onSubmit={handleSubmit}
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex flex-col md:flex-row md:justify-between gap-4"
     >
-      {(props: FormikProps<typeof INITIAL_VALUE>) => (
-        <Form className="flex flex-col md:flex-row md:justify-between gap-4">
-          <Box className="md:flex-1">
-            <CustomInput
-              name="reply"
-              id="reply"
-              label=""
-              multiline={true}
-              rows={4}
-            />
-          </Box>
-          <Box className="flex justify-end md:block">
-            <StyledButton className="btn-primary" type="submit">
-              Post Reply
-            </StyledButton>
-          </Box>
-        </Form>
-      )}
-    </Formik>
+      <fieldset className="w-full flex flex-col">
+        <textarea
+          id="comment"
+          rows={5}
+          {...register("comment")}
+          className="customInput bg-[#F7F8FD]"
+          aria-describedby="comment-error"
+        ></textarea>
+        {errors.comment && (
+          <div
+            id="comment-error"
+            aria-live="polite"
+            aria-atomic="true"
+            className="error-text"
+          >
+            {errors.comment.message}
+          </div>
+        )}
+        {formSubmissionStatus.error && (
+          <div aria-live="polite" aria-atomic="true" className="error-text">
+            {formSubmissionStatus.error}
+          </div>
+        )}
+      </fieldset>
+      <div className="flex justify-end md:block">
+        <StyledButton
+          className="btn-primary disabled:bg-cool-grey"
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Saving..." : "Post Reply"}
+        </StyledButton>
+      </div>
+    </form>
   );
 };
 

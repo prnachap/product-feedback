@@ -1,9 +1,11 @@
 import { ERROR_MESSAGES } from "@/constants/errorMessages";
 import clientPromise from "@/lib/mongodb";
+import FeedbackModel from "@/models/feedback.model";
 import { isEqual } from "lodash";
 import { ObjectId } from "mongodb";
 import { unstable_noStore as noStore } from "next/cache";
-import { FeedbackSummary, RoadMapStatsType } from "../..";
+import { CommentType, FeedbackSummary, RoadMapStatsType } from "../..";
+import { initializeDB } from "./initializeDB";
 
 function getSortingOrder(sortBy: string) {
   switch (sortBy) {
@@ -92,6 +94,23 @@ export async function getFeedbackById({ id }: { id: string }) {
       ])
       .next();
   } catch (error) {
+    throw new Error(ERROR_MESSAGES.SERVER_ERROR);
+  }
+}
+
+export async function getCommentsByFeedbackId({ id }: { id: string }) {
+  noStore();
+
+  try {
+    await initializeDB();
+    const feedbackDetails = (await FeedbackModel.findOne({
+      _id: id,
+    })
+      .lean()
+      .select({ _id: 0, user: 0, comments: 1 })) as { comments: CommentType[] };
+    return feedbackDetails;
+  } catch (error) {
+    console.log("error", error);
     throw new Error(ERROR_MESSAGES.SERVER_ERROR);
   }
 }

@@ -1,24 +1,15 @@
+"use client";
+
 import Box, { BoxProps } from "@mui/material/Box";
 import { styled } from "@mui/material/styles";
-import Typography from "@mui/material/Typography";
-import { FormikHelpers } from "formik";
 import isEmpty from "lodash/isEmpty";
 import Image from "next/image";
-import { useRouter } from "next/router";
 import { ForwardedRef, forwardRef, useRef, useState } from "react";
-import {
-  AxiosErrorType,
-  CommentType,
-  FeedbackApiResType,
-  ReplyPayloadType,
-} from "../..";
+import { CommentType } from "../../..";
+import imageUrl from "../../../public/assets/user-images/image-elijah.jpg";
 import { useContainerHeight } from "../../hooks/useContainerHeight";
-import useIsAuthorized from "../../hooks/useIsAuthorized";
-import useReplyMutation from "../../hooks/useReplyMutation";
-import imageUrl from "../../public/assets/user-images/image-elijah.jpg";
-import { addReply } from "../../services";
 import StyledButton from "../Button/StyledButton";
-import ReplyBox, { INITIAL_VALUE } from "../FormUI/ReplyBox";
+import ReplyBox from "../FormUI/ReplyBox";
 
 type StyledBoxProps = BoxProps & { progress: number; isFirstComment: boolean };
 
@@ -54,38 +45,10 @@ type CommentsProps = CommentType & { isFirstComment: boolean };
 const Comments: React.FC<CommentsProps> = (props) => {
   const { _id, comments, content, user, replyTo, isFirstComment } = props;
   const [openReplyForm, setOpenReplyForm] = useState(false);
-  const childContainerRef = useRef<HTMLElement>(null);
+  const childContainerRef = useRef<HTMLDivElement>(null);
   const { heightDiffBetweenParentAndChild } = useContainerHeight({
     childRef: childContainerRef,
   });
-  const { isAuthenticated } = useIsAuthorized();
-  const {
-    query: { feedbackId },
-  } = useRouter();
-
-  const { mutateAsync, isLoading, error } = useReplyMutation<
-    FeedbackApiResType,
-    AxiosErrorType<FeedbackApiResType>,
-    ReplyPayloadType<string>
-  >({
-    feedbackId: feedbackId as string,
-    queryFn: addReply,
-    queryKey: "feedback",
-  });
-
-  const handleSubmit = async (
-    values: typeof INITIAL_VALUE,
-    actions: FormikHelpers<typeof INITIAL_VALUE>
-  ) => {
-    mutateAsync({
-      feedbackId: feedbackId as string,
-      commentId: _id,
-      content: values.reply,
-    }).then(() => {
-      actions.resetForm();
-      setOpenReplyForm(false);
-    });
-  };
 
   const buttonTitle = openReplyForm ? "Cancel" : "Reply";
 
@@ -95,43 +58,38 @@ const Comments: React.FC<CommentsProps> = (props) => {
     if (isEmpty(comments)) return null;
     const className = isFirstComment ? "ml-12" : "ml-0";
     return (
-      <Box ref={childContainerRef} className={className}>
-        {comments?.map((comment, index) => {
+      <div ref={childContainerRef} className={className}>
+        {comments?.map((comment) => {
           return (
-            <Box key={comment._id} className="mt-8">
+            <div key={comment._id} className="mt-8">
               <Comments {...comment} isFirstComment={false} />
-            </Box>
+            </div>
           );
         })}
-      </Box>
+      </div>
     );
   };
 
   const renderContent = () => {
     return (
-      <Typography variant="body1" className="body-text">
+      <p className="body-text">
         {replyTo && (
           <span className="mr-1 text-purple-1000 font-bold">{`@${replyTo}`}</span>
         )}
         {content}
-      </Typography>
+      </p>
     );
   };
 
   const renderInput = () => {
     return openReplyForm ? (
-      <Box className="md:col-start-2 col-span-full mt-4 md:mt-6">
-        <ReplyBox
-          feedbackId={feedbackId as string}
-          commentId={_id}
-          handleSubmit={handleSubmit}
-        />
-      </Box>
+      <div className="md:col-start-2 col-span-full mt-4 md:mt-6">
+        <ReplyBox commentId={_id} />
+      </div>
     ) : null;
   };
 
   const renderReplyButton = () => {
-    if (!isAuthenticated) return;
     return (
       <StyledButton
         className="btn-reply justify-self-end"
@@ -146,9 +104,10 @@ const Comments: React.FC<CommentsProps> = (props) => {
     <StyledBox
       progress={heightDiffBetweenParentAndChild}
       isFirstComment={isFirstComment}
+      className="before:hidden lg:before:block "
     >
-      <Box className="grid grid-cols-[40px,2fr,1fr] gap-4 items-start md:gap-x-8 md:gap-y-4 ">
-        <Box>
+      <div className="grid grid-cols-[40px,2fr,1fr] gap-4 items-start md:gap-x-8 md:gap-y-4 ">
+        <div>
           <Image
             src={imageUrl}
             alt="user profic pic"
@@ -156,22 +115,19 @@ const Comments: React.FC<CommentsProps> = (props) => {
             width={40}
             className="rounded-full"
           />
-        </Box>
-        <Box>
-          <Typography
-            variant="h4"
-            className="quaternary-text  text-american-blue-100"
-          >
+        </div>
+        <div>
+          <h4 className="quaternary-text  text-american-blue-100">
             {user?.name ?? ""}
-          </Typography>
-          <Typography variant="body1" className="body-text md:!text-[14px]">
+          </h4>
+          <p className="body-text md:!text-[14px]">
             {`@${user?.username ?? ""}`}
-          </Typography>
-        </Box>
+          </p>
+        </div>
         {renderReplyButton()}
-        <Box className="md:col-start-2 col-span-full">{renderContent()}</Box>
+        <div className="md:col-start-2 col-span-full">{renderContent()}</div>
         {renderInput()}
-      </Box>
+      </div>
       {renderNestedComments()}
     </StyledBox>
   );

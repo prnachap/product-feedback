@@ -2,7 +2,6 @@ import React from "react";
 import CommentIcon from "../../../public/assets/shared/icon-comments.svg";
 import Chip from "../Chip/Chip";
 import CustomCard from "../UI/CustomCard";
-import { shimmer } from "@/constants";
 
 const FeedbackCardSkeleton: React.FC = () => {
   return (

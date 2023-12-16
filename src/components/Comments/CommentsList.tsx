@@ -1,22 +1,24 @@
-import Box from "@mui/material/Box";
+import { getCommentsByFeedbackId } from "@/lib/data";
 import { isEmpty } from "lodash";
-import React from "react";
-import { CommentType } from "../..";
 import CustomCard from "../UI/CustomCard";
 import Comments from "./Comments";
 
-type CommentsListProps = { comments: Array<CommentType> };
+type CommentsListProps = { feedbackId: string };
 
-const CommentsList: React.FC<CommentsListProps> = ({ comments }) => {
+const CommentsList = async ({ feedbackId }: CommentsListProps) => {
+  const { comments } = await getCommentsByFeedbackId({ id: feedbackId });
+
   const renderCommentList = () => {
-    return comments.map((item) => {
+    return comments?.map((item) => {
+      item._id = item._id.toString();
+      item.user._id = item.user._id.toString();
       return (
-        <Box
-          key={item._id}
+        <div
+          key={item._id.toString()}
           className="border-b-[1px] border-cool-grey/[.25] pb-6 last:border-b-0 last:pb-0 md:pb-8"
         >
           <Comments {...item} isFirstComment={true} />
-        </Box>
+        </div>
       );
     });
   };

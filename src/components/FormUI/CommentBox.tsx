@@ -44,7 +44,7 @@ const CommentBox: React.FC = () => {
     reset();
     setFormSubmissionStatus({ ...formSubmissionStatus, ...status });
   };
-  console.log("error", errors);
+
   return (
     <CustomCard>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -63,16 +63,6 @@ const CommentBox: React.FC = () => {
             aria-describedby="comment-error"
             disabled={isSubmitting}
           ></textarea>
-          {errors.comment && (
-            <div
-              id="comment-error"
-              aria-live="polite"
-              aria-atomic="true"
-              className="error-text"
-            >
-              {errors.comment.message}
-            </div>
-          )}
           {errors.comment && (
             <div
               id="comment-error"
