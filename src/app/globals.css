@@ -126,7 +126,7 @@
   }
 
   .customInput {
-    @apply w-full p-4 rounded-md text-sm text-american-blue-100 font-normal outline-none border-[1px] border-transparent hover:border-indigo-1000 transition-all;
+    @apply w-full p-4 rounded-md text-sm text-american-blue-100 font-normal outline-indigo-1000 outline-1 border-[1px] border-transparent hover:border-indigo-1000 transition-all;
   }
 
   .loader-animation {

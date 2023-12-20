@@ -1,24 +1,18 @@
 "use client";
 
-import { sortBy } from "../../constants";
-// import useIsAuthorized from "../../hooks/useIsAuthorized";
 import { useRouter } from "next/navigation";
 import PlusIcon from "../../../public/assets/shared/icon-plus.svg";
 import BlubIcon from "../../../public/assets/suggestions/icon-suggestions.svg";
+import { sortBy } from "../../constants";
 import StyledButton from "../Button/StyledButton";
 import MenuButton from "../DropdownMenu/MenuButton";
 
 const CreateFeedbackBar: React.FC = () => {
   const router = useRouter();
-  // const { isAuthenticated, onRedirectForUnAuthorizeduser } = useIsAuthorized();
 
-  // const handleCreateFeedback = () => {
-  //   if (!isAuthenticated) {
-  //     onRedirectForUnAuthorizeduser();
-  //     return;
-  //   }
-  //   router.push("/create-feedback");
-  // };
+  const handleCreateFeedback = () => {
+    router.push("/feedback/create");
+  };
 
   return (
     <div className="w-full flex items-center justify-between px-3 gap-2 min-h-[5rem] max-h-[5rem] bg-american-blue-200 md:p-6 md:rounded-lg">
@@ -32,7 +26,7 @@ const CreateFeedbackBar: React.FC = () => {
       <div>
         <StyledButton
           className="flex items-center gap-2 btn-primary"
-          // onClick={handleCreateFeedback}
+          onClick={handleCreateFeedback}
         >
           <PlusIcon />
           <span>Add Feedback</span>

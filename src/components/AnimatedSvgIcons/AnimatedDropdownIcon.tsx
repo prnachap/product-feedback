@@ -3,6 +3,7 @@ import React from "react";
 
 type AnimatedDropdownIconProps = {
   animate: string;
+  strokeColor?: string;
 };
 
 const iconHoverVariant = {
@@ -20,6 +21,7 @@ const iconHoverVariant = {
 
 const AnimatedDropdownIcon: React.FC<AnimatedDropdownIconProps> = ({
   animate,
+  strokeColor,
 }) => {
   return (
     <motion.svg
@@ -32,7 +34,7 @@ const AnimatedDropdownIcon: React.FC<AnimatedDropdownIconProps> = ({
     >
       <path
         d="M1 1l4 4 4-4"
-        stroke="#fff"
+        stroke={strokeColor ? strokeColor : "#fff"}
         strokeWidth="2"
         fill="none"
         fillRule="evenodd"

@@ -4,10 +4,23 @@ import { ERROR_MESSAGES } from "@/constants/errorMessages";
 import CommentModel, { ICommentModel } from "@/models/comment.model";
 import FeedbackModel, { IFeedbackModel } from "@/models/feedback.model";
 import UserModel, { IUserModel } from "@/models/user.model";
-import { gte, isEmpty, isEqual } from "lodash";
+import { gte, isEmpty, isEqual, result } from "lodash";
 import { revalidatePath } from "next/cache";
 import { FeedbackType } from "../..";
 import { initializeDB } from "./initializeDB";
+import { signIn } from "../../auth";
+import { AuthError } from "next-auth";
+import { object } from "zod";
+import { CreateFeedbackSchema } from "./schema";
+
+export type State = {
+  errors?: {
+    customerId?: string[];
+    amount?: string[];
+    status?: string[];
+  };
+  message?: string | null;
+};
 
 export async function addComments({
   comments,
@@ -122,4 +135,49 @@ export const addLikes = async (feedbackId: string) => {
   } catch (error: any) {
     return { success: false, error: ERROR_MESSAGES.ADD_UPVOTES_ERROR };
   }
+};
+
+export const authenticate = async (
+  prevState: string | undefined,
+  formData: FormData
+) => {
+  try {
+    await signIn("credentials", formData);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case "CredentialsSignin":
+          return "Invalid credentials";
+        default:
+          return "Something went wrong";
+      }
+    }
+    throw error;
+  }
+};
+
+export const createFeedback = async (
+  category: string,
+  status: string,
+  _prevState: State,
+  formData: FormData
+) => {
+  const title = formData.get("title");
+  const description = formData.get("description");
+
+  const validatedFields = CreateFeedbackSchema.safeParse({
+    title,
+    category,
+    status,
+    description,
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Create Feedback.",
+    };
+  }
+
+  // console.log("title", category, status, title, description);
 };
