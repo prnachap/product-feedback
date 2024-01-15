@@ -191,7 +191,6 @@ export const createFeedback = async (
       user,
     });
   } catch (error: any) {
-    console.log("error", error);
     return {
       errors: {},
       message: "Failed to Create Feedback.",

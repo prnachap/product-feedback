@@ -1,9 +1,10 @@
-import Box from "@mui/material/Box";
-import { styled } from "@mui/material/styles";
+"use client";
+
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
+import { styled } from "@mui/material/styles";
 import React, { useState } from "react";
-import { dummyDataOne, dummyDataThree, dummyDataTwo } from "../../constants";
+import { FeedbackSummary } from "../../..";
 import StatusCardList from "../Status/StatusCardList";
 
 const COLOR_TYPES: Record<string, string> = {
@@ -66,7 +67,7 @@ function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
-    <Box
+    <div
       role="tabpanel"
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
@@ -74,18 +75,26 @@ function TabPanel(props: TabPanelProps) {
       {...other}
     >
       {value === index && children}
-    </Box>
+    </div>
   );
 }
 
-const RoadmapTabs = () => {
+const RoadmapTabs = ({
+  plannedData,
+  inProgressData,
+  liveData,
+}: {
+  plannedData: FeedbackSummary[];
+  inProgressData: FeedbackSummary[];
+  liveData: FeedbackSummary[];
+}) => {
   const [value, setValue] = useState(0);
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
   return (
-    <Box className="md:hidden">
-      <Box className="sticky top-[80px] z-50 border-b-2 border-[#8C92B3]border-opacity-5">
+    <div className="md:hidden">
+      <div className="sticky top-[80px] z-50 border-b-2 border-[#8C92B3]border-opacity-5">
         <StyledTabs
           value={value}
           onChange={handleChange}
@@ -95,21 +104,33 @@ const RoadmapTabs = () => {
           <StyledTab label="in-progress" />
           <StyledTab label="live" />
         </StyledTabs>
-      </Box>
-      <Box className="px-3 relative h-[70vh] overflow-auto z-10">
-        <Box className="py-6">
+      </div>
+      <div className="px-3 relative h-[70vh] overflow-auto z-10">
+        <div className="py-6">
           <TabPanel value={value} index={0}>
-            <StatusCardList feedbackList={dummyDataOne} />
+            <StatusCardList
+              status={"planned"}
+              description="ideas prioritized for research"
+              feedbackList={plannedData}
+            />
           </TabPanel>
           <TabPanel value={value} index={1}>
-            <StatusCardList feedbackList={dummyDataTwo} />
+            <StatusCardList
+              status={"in-progress"}
+              description="currently being developed"
+              feedbackList={inProgressData}
+            />
           </TabPanel>
           <TabPanel value={value} index={2}>
-            <StatusCardList feedbackList={dummyDataThree} />
+            <StatusCardList
+              status={"live"}
+              description="Released features"
+              feedbackList={liveData}
+            />
           </TabPanel>
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -16,7 +16,7 @@ const EditFeedbackContainer = async ({
   }
   return (
     <LayoutContainer className="mt-8 w-[90%] md:w-full">
-      <BackButton path={`/feedback/${feedbackId}`} />
+      <BackButton />
       <EditFeedbackForm feedbackData={feedbackData} />
     </LayoutContainer>
   );

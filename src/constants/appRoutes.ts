@@ -1,7 +1,8 @@
 export const APP_ROUTES = {
   LOGIN_PAGE: "/auth/login",
-  HOME_PAGE: "/",
-  CREATE_FEEDBACK: "/create-feedback",
-  FEEDBACK_DETAIL: "/feedback-detail/[feedbackId]",
-  EDIT_FEEDBACK: "/edit-feedback/[feedbackId]",
+  HOME_PAGE: "/feedback",
+  CREATE_FEEDBACK: "/feedback/create",
+  FEEDBACK_DETAIL: "/feedback/[feedbackId]",
+  EDIT_FEEDBACK: "/feedback/[feedbackId]/edit",
+  ROADMAP: "/feedback/roadmap",
 };

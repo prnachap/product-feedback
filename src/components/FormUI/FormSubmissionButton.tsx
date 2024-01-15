@@ -10,7 +10,7 @@ const FormSubmissionButton = ({
   form: string;
 }) => {
   const { pending } = useFormStatus();
-  console.log(pending, "pending");
+
   return (
     <StyledButton
       form={form}

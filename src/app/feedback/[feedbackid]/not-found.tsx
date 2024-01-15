@@ -7,7 +7,7 @@ export default function NotFound() {
     <main>
       <LayoutContainer className="!w-[95%] mt-6 h-[70vh]">
         <div className="flex justify-between items-center z-20 mb-6 sticky top-0 md:top-10 lg:top-14">
-          <BackButton path="/feedback" />
+          <BackButton />
         </div>
         <EmptyFeedback
           title="404 not found"

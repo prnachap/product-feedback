@@ -4,7 +4,12 @@ import FeedbackModel from "@/models/feedback.model";
 import { isEqual } from "lodash";
 import { ObjectId } from "mongodb";
 import { unstable_noStore as noStore } from "next/cache";
-import { CommentType, FeedbackSummary, RoadMapStatsType } from "../..";
+import {
+  CommentType,
+  FeedbackSummary,
+  FeedbackType,
+  RoadMapStatsType,
+} from "../..";
 import { initializeDB } from "./initializeDB";
 
 function getSortingOrder(sortBy: string) {
@@ -97,10 +102,11 @@ export async function getFeedbackById({ id }: { id: string }) {
     throw new Error(ERROR_MESSAGES.SERVER_ERROR);
   }
 }
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function getCommentsByFeedbackId({ id }: { id: string }) {
   noStore();
-
+  await sleep(15000);
   try {
     await initializeDB();
     const feedbackDetails = (await FeedbackModel.findOne({
@@ -110,7 +116,6 @@ export async function getCommentsByFeedbackId({ id }: { id: string }) {
       .select({ _id: 0, user: 0, comments: 1 })) as { comments: CommentType[] };
     return feedbackDetails;
   } catch (error) {
-    console.log("error", error);
     throw new Error(ERROR_MESSAGES.SERVER_ERROR);
   }
 }
@@ -125,6 +130,33 @@ export const getRoadMapStatistics = async () => {
         { $group: { _id: "$status", count: { $sum: 1 } } },
       ])
       .toArray();
+  } catch (error) {
+    throw new Error(ERROR_MESSAGES.SERVER_ERROR);
+  }
+};
+
+export const getFeedbackByStatus = async (category: FeedbackType["status"]) => {
+  try {
+    const client = await clientPromise;
+    const collection = client.db("product-feedback").collection("feedbacks");
+    const result = await collection
+      .aggregate<FeedbackSummary>([
+        { $match: { status: category } },
+        {
+          $addFields: {
+            totalComments: { $size: "$comments" },
+            totalVotes: { $size: "$upvotes" },
+          },
+        },
+        {
+          $project: {
+            comments: 0,
+            upvotes: 0,
+          },
+        },
+      ])
+      .toArray();
+    return result;
   } catch (error) {
     throw new Error(ERROR_MESSAGES.SERVER_ERROR);
   }

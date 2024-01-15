@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { status } from "../../constants";
+import { APP_ROUTES, status } from "../../constants";
 import Status from "../Status/Status";
 import CustomCard from "../UI/CustomCard";
 
@@ -15,7 +15,7 @@ const RoadmapCard = async () => {
       <div className="flex justify-between items-center">
         <h3 className="tertiary-text text-american-blue-100">Roadmap</h3>
         <Link
-          href="/roadmap"
+          href={APP_ROUTES.ROADMAP}
           className="body-three-text underline text-indigo-1000"
         >
           View
