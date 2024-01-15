@@ -5,7 +5,7 @@ import LayoutContainer from "../UI/LayoutContainer";
 const CreateFeedbackContainer = () => {
   return (
     <LayoutContainer className="mt-8 w-[90%] md:w-full">
-      <BackButton />
+      <BackButton path="/feedback" />
       <CreateFeedbackForm />
     </LayoutContainer>
   );

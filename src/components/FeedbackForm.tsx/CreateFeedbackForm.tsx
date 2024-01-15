@@ -9,6 +9,7 @@ import CreateIcon from "../../../public/assets/shared/icon-new-feedback.svg";
 import { getButtonTitle, getFormTitle } from "../../utils/formElementUtils";
 import StyledButton from "../Button/StyledButton";
 import ErrorList from "../FormUI/ErrorLists";
+import FormSubmissionButton from "../FormUI/FormSubmissionButton";
 import Input from "../FormUI/Input";
 import Select from "../FormUI/Select";
 import Textarea from "../FormUI/Textarea";
@@ -25,11 +26,17 @@ const CreateFeedbackForm: React.FC<CreateFeedbackFormProps> = ({ title }) => {
   const [feedbackStatus, setFeedbackStatus] = useState(status[0]);
   const createFeedbackAction = createFeedback.bind(
     null,
-    feedbackCategory,
-    feedbackStatus
+    feedbackStatus,
+    feedbackCategory
   );
+
   const [state, dispatch] = useFormState(createFeedbackAction, {
-    errors: {},
+    errors: {
+      category: [],
+      status: [],
+      title: [],
+      description: [],
+    },
     message: null,
   });
   const formRef = useRef<HTMLFormElement>(null);
@@ -41,6 +48,7 @@ const CreateFeedbackForm: React.FC<CreateFeedbackFormProps> = ({ title }) => {
   const categoryError = state?.errors?.category;
   const statusError = state?.errors?.status;
   const descriptionError = state?.errors?.description;
+  const formError = Array(1).fill(state?.message);
 
   const hasTitleError = Boolean(titleError?.length);
   const hasCategoryError = Boolean(categoryError?.length);
@@ -145,15 +153,13 @@ const CreateFeedbackForm: React.FC<CreateFeedbackFormProps> = ({ title }) => {
             />
             <ErrorList id="description-error" errors={descriptionError} />
           </fieldset>
-
+          <ErrorList id="form-error" errors={formError} />
           <div>
             <div className="flex flex-col-reverse justify-center gap-4 mt-4 md:flex-row md:justify-end">
               <StyledButton className="btn-tertiary" type="reset">
                 Cancel
               </StyledButton>
-              <StyledButton className="btn-primary" type="submit">
-                {buttonTitle}
-              </StyledButton>
+              <FormSubmissionButton title={buttonTitle} />
             </div>
           </div>
         </form>

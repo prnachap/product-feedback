@@ -25,7 +25,7 @@ If the 'title' is provided, it returns "Save Changes" otherwise it returns "Add 
 @returns {string} The generated button title.
 */
 export const getButtonTitle = (title: string = "") => {
-  return title ? `Save Changes’` : "Add Feedback";
+  return title ? `Save Changes` : "Add Feedback";
 };
 
 /**

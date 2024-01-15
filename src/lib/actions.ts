@@ -4,19 +4,22 @@ import { ERROR_MESSAGES } from "@/constants/errorMessages";
 import CommentModel, { ICommentModel } from "@/models/comment.model";
 import FeedbackModel, { IFeedbackModel } from "@/models/feedback.model";
 import UserModel, { IUserModel } from "@/models/user.model";
-import { gte, isEmpty, isEqual, result } from "lodash";
-import { revalidatePath } from "next/cache";
-import { FeedbackType } from "../..";
-import { initializeDB } from "./initializeDB";
-import { signIn } from "../../auth";
+import { gte, isEmpty, isEqual } from "lodash";
+import { ObjectId } from "mongodb";
 import { AuthError } from "next-auth";
-import { object } from "zod";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { FeedbackType } from "../..";
+import { signIn } from "../../auth";
+import { initializeDB } from "./initializeDB";
+import clientPromise from "./mongodb";
 import { CreateFeedbackSchema } from "./schema";
 
 export type State = {
   errors?: {
-    customerId?: string[];
-    amount?: string[];
+    title: string[];
+    description?: string[];
+    category?: string[];
     status?: string[];
   };
   message?: string | null;
@@ -157,9 +160,9 @@ export const authenticate = async (
 };
 
 export const createFeedback = async (
-  category: string,
   status: string,
-  _prevState: State,
+  category: string,
+  _state: State,
   formData: FormData
 ) => {
   const title = formData.get("title");
@@ -167,8 +170,8 @@ export const createFeedback = async (
 
   const validatedFields = CreateFeedbackSchema.safeParse({
     title,
-    category,
-    status,
+    category: category,
+    status: status,
     description,
   });
 
@@ -179,5 +182,120 @@ export const createFeedback = async (
     };
   }
 
-  // console.log("title", category, status, title, description);
+  try {
+    const user = await UserModel.findOne<IUserModel>({
+      _id: "624271eda7e9284035913aa6",
+    });
+    await FeedbackModel.create<IFeedbackModel>({
+      ...validatedFields.data,
+      user,
+    });
+  } catch (error: any) {
+    console.log("error", error);
+    return {
+      errors: {},
+      message: "Failed to Create Feedback.",
+    };
+  }
+  revalidatePath("/feedback");
+  redirect("/feedback");
+};
+
+export const editFeedback = async (
+  feedbackId: string,
+  status: string,
+  category: string,
+  _state: State,
+  formData: FormData
+) => {
+  const title = formData.get("title");
+  const description = formData.get("description");
+
+  const validatedFields = CreateFeedbackSchema.safeParse({
+    title,
+    category: category,
+    status: status,
+    description,
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Create Feedback.",
+    };
+  }
+
+  try {
+    const user = await UserModel.findOne<IUserModel>({
+      _id: "624271eda7e9284035913aa6",
+    });
+    await FeedbackModel.updateOne<IFeedbackModel>(
+      { _id: feedbackId },
+      {
+        ...validatedFields.data,
+        user,
+      }
+    );
+  } catch (error: any) {
+    console.log("error", error);
+    return {
+      errors: {},
+      message: "Failed to Create Feedback.",
+    };
+  }
+  revalidatePath(`/feedback/${feedbackId}`);
+  revalidatePath(`/feedback`);
+  redirect(`/feedback/${feedbackId}`);
+};
+
+export const deleteFeedback = async (feedbackId: string) => {
+  try {
+    const client = await clientPromise;
+    const collection = client.db("product-feedback").collection("feedbacks");
+    const data = await collection
+      .aggregate<{ _id: ObjectId; comments: Array<{ _id: ObjectId }> }>([
+        { $match: { _id: new ObjectId(feedbackId) } },
+        {
+          $graphLookup: {
+            from: "comments",
+            startWith: "$comments",
+            connectFromField: "comments",
+            connectToField: "_id",
+            as: "comments",
+          },
+        },
+        {
+          $project: {
+            comments: { _id: 1 },
+          },
+        },
+      ])
+      .next();
+
+    await collection.deleteOne({ _id: new ObjectId(feedbackId) });
+
+    if (data && data?.comments?.length > 0) {
+      const commentIds = data.comments.map((comment) => comment._id);
+      await CommentModel.deleteMany({
+        _id: {
+          $in: commentIds,
+        },
+      });
+      await UserModel.updateMany(
+        {},
+        {
+          $pull: {
+            posts: {
+              _id: { $in: commentIds },
+            },
+          },
+        }
+      );
+    }
+  } catch (error) {
+    throw new Error("failed to delete feedback");
+  }
+
+  revalidatePath(`/feedback`);
+  redirect(`/feedback`);
 };

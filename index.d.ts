@@ -34,7 +34,7 @@ type RoadMapStatsType = {
   count: number;
 };
 
-type FeedbackSummary = Omit<FeedbackType, "status" | "comments" | "upvotes">;
+type FeedbackSummary = Omit<FeedbackType, "comments" | "upvotes">;
 
 type FeedbackApiResType = FeedbackType & { comments: CommentType[] };
 

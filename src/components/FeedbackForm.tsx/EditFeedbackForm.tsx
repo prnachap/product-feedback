@@ -1,147 +1,182 @@
-import Box from "@mui/material/Box";
-import CircularProgress from "@mui/material/CircularProgress";
-import Typography from "@mui/material/Typography";
-import { Form, Formik, FormikProps } from "formik";
-import { FeedbackApiResType } from "../..";
-import { category, status } from "../../constants";
-import useDeleteFeedback from "../../hooks/useDeleteFeedback";
-import useEditFeedback from "../../hooks/useEditFeedback";
-import EditIcon from "../../public/assets/shared/icon-edit-feedback.svg";
-import { getFormTitle, validationSchema } from "../../utils/formElementUtils";
+"use client";
+
+import {
+  category as categoryOptions,
+  status as statusOptions,
+} from "@/constants";
+import { editFeedback } from "@/lib/actions";
+import { isEmpty } from "lodash";
+import { useEffect, useRef, useState } from "react";
+import { useFormState } from "react-dom";
+import { FeedbackSummary } from "../../..";
+import EditIcon from "../../../public/assets/shared/icon-edit-feedback.svg";
+import { getButtonTitle, getFormTitle } from "../../utils/formElementUtils";
 import StyledButton from "../Button/StyledButton";
-import CustomSnackbar from "../CustomSnackbar/CustomSnackbar";
-import CustomInput from "../FormUI/CustomInput";
-import CustomSelect from "../FormUI/CustomSelect";
-import Overlay from "../Overlay/Overlay";
+import DeleteForm from "../FormUI/DeleteForm";
+import ErrorList from "../FormUI/ErrorLists";
+import FormSubmissionButton from "../FormUI/FormSubmissionButton";
+import Input from "../FormUI/Input";
+import Select from "../FormUI/Select";
+import Textarea from "../FormUI/Textarea";
 
-type EditFeedbackFormProps = {
-  feedbackData: FeedbackApiResType;
-};
-
+type EditFeedbackFormProps = { feedbackData: FeedbackSummary };
 const EditFeedbackForm: React.FC<EditFeedbackFormProps> = ({
   feedbackData,
 }) => {
-  const formTitle = getFormTitle(feedbackData?.title);
-  const { mutate, isError, isSuccess, isLoading, error } = useEditFeedback();
+  const { title, category, status, description } = feedbackData;
+  const formTitle = getFormTitle(title);
+  const buttonTitle = getButtonTitle(title);
+  const selectRef = useRef<HTMLDivElement | null>(null);
+  const [feedbackCategory, setFeedbackCategory] = useState(category);
+  const [feedbackStatus, setFeedbackStatus] = useState(status);
+  const editFeedbackAction = editFeedback.bind(
+    null,
+    feedbackData._id,
+    feedbackCategory,
+    feedbackStatus
+  );
 
-  const {
-    mutate: mutateDelete,
-    isSuccess: isSuccessForDelete,
-    isError: isErrorForDelete,
-    isLoading: isLoadingForDelete,
-    error: errorForDelete,
-  } = useDeleteFeedback();
+  const [state, dispatch] = useFormState(editFeedbackAction, {
+    errors: {},
+    message: null,
+  });
+  const formRef = useRef<HTMLFormElement>(null);
 
-  const {
-    _id,
-    title,
-    category: feedbackCategory,
-    status: feedbackStatus,
-    description,
-  } = feedbackData;
+  const onCategoryChange = (option: string) => setFeedbackCategory(option);
+  const onStatusChange = (status: any) => setFeedbackStatus(status);
 
-  const initialValue = {
-    title: title,
-    category: feedbackCategory,
-    status: feedbackStatus,
-    description: description,
-  };
+  const titleError = state?.errors?.title;
+  const categoryError = state?.errors?.category;
+  const statusError = state?.errors?.status;
+  const descriptionError = state?.errors?.description;
+  const formError = Array(1).fill(state?.message);
 
-  const handleDelete = () => mutateDelete({ feedbackId: _id });
+  const hasTitleError = Boolean(titleError?.length);
+  const hasCategoryError = Boolean(categoryError?.length);
+  const hasStatusError = Boolean(statusError?.length);
+  const hasDescriptionError = Boolean(descriptionError?.length);
 
-  const renderSnackbar = () => {
-    const errorObject = errorForDelete ? errorForDelete : error;
-
-    const errorMessage =
-      errorObject?.response?.data?.error ??
-      "Something went wrong please try again!";
-
-    if (isSuccess || isSuccessForDelete)
-      return <CustomSnackbar message="Changes were successfully" />;
-    if (isError || isErrorForDelete)
-      return <CustomSnackbar message={errorMessage} severity="error" />;
-  };
-
-  const renderLoader = () => {
-    if (!isLoading) return;
-    return (
-      <Overlay className="md:!block">
-        <Box className="flex h-2/3 justify-center items-center">
-          <CircularProgress />
-        </Box>
-      </Overlay>
-    );
-  };
+  useEffect(() => {
+    if (isEmpty(state?.errors) || !formRef.current) return;
+    const elementWithError = document.querySelector('[aria-invalid="true"]');
+    if (elementWithError instanceof HTMLElement) {
+      elementWithError.focus();
+    }
+  }, [state]);
 
   return (
-    <Box className="bg-white rounded-lg relative">
-      <Box className="absolute top-[-26px] left-6">
+    <div className="bg-white rounded-lg relative mt-10">
+      <div className="absolute top-[-26px] left-6">
         <EditIcon />
-      </Box>
-      <Box className="p-10">
-        <Typography variant="h1" className="primary-text mb-6">
-          {formTitle}
-        </Typography>
-        <Formik
-          initialValues={initialValue}
-          onSubmit={(values) => mutate({ ...values, feedbackId: _id })}
-          validationSchema={validationSchema}
+      </div>
+      <div className="p-10">
+        <h1 className="primary-text mb-6">{formTitle}</h1>
+        <form
+          action={dispatch}
+          className="flex flex-col gap-4"
+          aria-describedby="form-error"
+          ref={formRef}
+          id="edit-feedback-form"
         >
-          {(props: FormikProps<typeof initialValue>) => (
-            <Form className="flex flex-col gap-4">
-              <CustomInput
-                id="title"
-                name="title"
-                label="Feedback Title"
-                helperText="Add a short, descriptive headline"
-              />
-              <CustomSelect
-                id="category"
-                name="category"
-                label="Category"
-                helperText="Choose a category for your feedback"
-                options={category}
-              />
-              <CustomSelect
-                id="status"
-                name="status"
-                label="Status"
-                helperText="Choose a feature state"
-                options={status}
-              />
-              <CustomInput
-                id="description"
-                name="description"
-                label="Feedback Detail"
-                helperText="Include any specific comments on what should be improved,
-                added, etc."
-                multiline={true}
-                rows={5}
-              />
-
-              <Box className="flex flex-col-reverse gap-4 mt-4 md:flex-row justify-between">
-                <StyledButton className="btn-danger" onClick={handleDelete}>
-                  Delete
-                </StyledButton>
-                <Box className="flex flex-col-reverse justify-center gap-4 md:flex-row md:justify-end">
-                  <StyledButton
-                    className="btn-tertiary"
-                    onClick={() => props.resetForm()}
-                  >
-                    Cancel
-                  </StyledButton>
-                  <StyledButton className="btn-primary" type="submit">
-                    Save Changes
-                  </StyledButton>
-                </Box>
-              </Box>
-            </Form>
-          )}
-        </Formik>
-      </Box>
-      {renderLoader()}
-      {renderSnackbar()}
-    </Box>
+          <fieldset>
+            <label htmlFor="title" className="input-label">
+              Feedback Title
+            </label>
+            <small className="input-description">
+              Add a short, descriptive headline
+            </small>
+            <Input
+              id="title"
+              autoFocus
+              name="title"
+              aria-describedby="title-error"
+              defaultValue={title}
+              aria-invalid={hasTitleError || undefined}
+              className={titleError?.length ? `!border-jasper` : ""}
+            />
+            <ErrorList id="title-error" errors={titleError} />
+          </fieldset>
+          <fieldset>
+            <label
+              htmlFor="category"
+              className="input-label"
+              onClick={() =>
+                selectRef instanceof HTMLElement
+                  ? selectRef?.current?.focus?.()
+                  : null
+              }
+            >
+              Category
+            </label>
+            <small className="input-description">
+              Choose a category for your feedback
+            </small>
+            <Select
+              id="category"
+              value={feedbackCategory}
+              onChange={onCategoryChange}
+              options={categoryOptions}
+              ref={selectRef}
+              aria-describedby="category-error"
+              className={categoryError?.length ? `!border-jasper` : ""}
+              aria-invalid={hasCategoryError || undefined}
+            />
+            <ErrorList id="category-error" errors={categoryError} />
+          </fieldset>
+          <fieldset>
+            <label htmlFor="status" className="input-label">
+              Status
+            </label>
+            <small className="input-description">Change feature state</small>
+            <Select
+              id="status"
+              value={feedbackStatus}
+              onChange={onStatusChange}
+              options={statusOptions}
+              aria-describedby="status-error"
+              aria-invalid={hasStatusError || undefined}
+              className={statusError?.length ? `!border-jasper` : ""}
+            />
+            <ErrorList id="status-error" errors={statusError} />
+          </fieldset>
+          <fieldset>
+            <label htmlFor="description" className="input-label">
+              Feedback Detail
+            </label>
+            <small className="input-description">
+              Include any specific comments on what should be improved, added,
+              etc.
+            </small>
+            <Textarea
+              id="description"
+              name="description"
+              aria-describedby="description-error"
+              defaultValue={description}
+              aria-invalid={hasDescriptionError || undefined}
+              className={descriptionError?.length ? `!border-jasper` : ""}
+            />
+            <ErrorList id="description-error" errors={descriptionError} />
+          </fieldset>
+          <ErrorList id="form-error" errors={formError} />
+        </form>
+        <div className="flex justify-between items-center mt-4">
+          <DeleteForm feedbackId={feedbackData._id} />
+          <div className="flex flex-col-reverse justify-center gap-4 md:flex-row md:justify-end">
+            <StyledButton
+              className="btn-tertiary"
+              type="reset"
+              form="edit-feedback-form"
+            >
+              Cancel
+            </StyledButton>
+            <FormSubmissionButton
+              form="edit-feedback-form"
+              title={buttonTitle}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

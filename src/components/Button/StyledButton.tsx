@@ -1,22 +1,15 @@
-type StyledButtonProps = {
-  className?: string;
-  children?: React.ReactNode;
-  type?: "button" | "submit" | "reset";
-  onClick?: () => void;
-  disabled?: boolean;
-};
+import React from "react";
 
-const StyledButton: React.FC<StyledButtonProps> = ({
-  className,
-  children,
-  type = "button",
-  ...restProps
-}) => {
+export const StyledButton = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ className, children, ...props }, ref) => {
   return (
-    <button className={className} type={type} {...restProps}>
+    <button ref={ref} className={className} {...props}>
       {children}
     </button>
   );
-};
+});
+StyledButton.displayName = "Button";
 
 export default StyledButton;
