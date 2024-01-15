@@ -10,7 +10,6 @@ import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FeedbackType } from "../..";
-import { signIn } from "../../auth";
 import { initializeDB } from "./initializeDB";
 import clientPromise from "./mongodb";
 import { CreateFeedbackSchema } from "./schema";
@@ -137,25 +136,6 @@ export const addLikes = async (feedbackId: string) => {
     return { success: true, error: null };
   } catch (error: any) {
     return { success: false, error: ERROR_MESSAGES.ADD_UPVOTES_ERROR };
-  }
-};
-
-export const authenticate = async (
-  prevState: string | undefined,
-  formData: FormData
-) => {
-  try {
-    await signIn("credentials", formData);
-  } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return "Invalid credentials";
-        default:
-          return "Something went wrong";
-      }
-    }
-    throw error;
   }
 };
 
