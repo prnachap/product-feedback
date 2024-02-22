@@ -4,7 +4,7 @@ import { ERROR_MESSAGES } from "@/constants/errorMessages";
 import CommentModel, { ICommentModel } from "@/models/comment.model";
 import FeedbackModel, { IFeedbackModel } from "@/models/feedback.model";
 import UserModel, { IUserModel } from "@/models/user.model";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { gte, isEmpty, isEqual } from "lodash";
 import { ObjectId } from "mongodb";
 import { AuthError } from "next-auth";
@@ -12,7 +12,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { FeedbackType } from "../..";
-import { signIn } from "../../auth";
+import { signIn, signOut } from "../../auth";
 import { DEFAULT_LOGIN_REDIRECT } from "../../route";
 import { initializeDB } from "./initializeDB";
 import clientPromise from "./mongodb";
@@ -377,4 +377,8 @@ export const registerAction = async (
       formError: "Something went wrong. Please try again.",
     };
   }
+};
+
+export const logoutAction = async () => {
+  await signOut();
 };

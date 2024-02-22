@@ -1,12 +1,3 @@
-import * as Yup from "yup";
-
-export const validationSchema = Yup.object().shape({
-  title: Yup.string().required("Can't be empty"),
-  category: Yup.string().required("Can't be empty"),
-  status: Yup.string().required("Can't be empty"),
-  description: Yup.string().required("Can't be empty"),
-});
-
 /**
 Returns the form title based on the provided 'title' string.
 If the 'title' is provided, it returns "Editing '{title}'" otherwise it returns "Create New Feedback".
