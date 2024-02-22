@@ -18,6 +18,7 @@ import FormSubmissionButton from "../FormUI/FormSubmissionButton";
 import Input from "../FormUI/Input";
 import Select from "../FormUI/Select";
 import Textarea from "../FormUI/Textarea";
+import AlertCard from "../UI/AlertCard";
 
 type EditFeedbackFormProps = { feedbackData: FeedbackSummary };
 const EditFeedbackForm: React.FC<EditFeedbackFormProps> = ({
@@ -37,8 +38,14 @@ const EditFeedbackForm: React.FC<EditFeedbackFormProps> = ({
   );
 
   const [state, dispatch] = useFormState(editFeedbackAction, {
-    errors: {},
-    message: null,
+    errors: {
+      category: [],
+      status: [],
+      title: [],
+      description: [],
+    },
+    status: null,
+    formError: null,
   });
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -49,12 +56,13 @@ const EditFeedbackForm: React.FC<EditFeedbackFormProps> = ({
   const categoryError = state?.errors?.category;
   const statusError = state?.errors?.status;
   const descriptionError = state?.errors?.description;
-  const formError = Array(1).fill(state?.message);
+  const formError = state.formError;
 
   const hasTitleError = Boolean(titleError?.length);
   const hasCategoryError = Boolean(categoryError?.length);
   const hasStatusError = Boolean(statusError?.length);
   const hasDescriptionError = Boolean(descriptionError?.length);
+  const hasFormError = Boolean(formError);
 
   useEffect(() => {
     if (isEmpty(state?.errors) || !formRef.current) return;
@@ -157,7 +165,7 @@ const EditFeedbackForm: React.FC<EditFeedbackFormProps> = ({
             />
             <ErrorList id="description-error" errors={descriptionError} />
           </fieldset>
-          <ErrorList id="form-error" errors={formError} />
+          {hasFormError && <AlertCard severity="error" message={formError} />}
         </form>
         <div className="flex justify-between items-center mt-4">
           <DeleteForm feedbackId={feedbackData._id} />

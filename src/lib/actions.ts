@@ -4,25 +4,36 @@ import { ERROR_MESSAGES } from "@/constants/errorMessages";
 import CommentModel, { ICommentModel } from "@/models/comment.model";
 import FeedbackModel, { IFeedbackModel } from "@/models/feedback.model";
 import UserModel, { IUserModel } from "@/models/user.model";
+import bcrypt from "bcrypt";
 import { gte, isEmpty, isEqual } from "lodash";
 import { ObjectId } from "mongodb";
 import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 import { FeedbackType } from "../..";
+import { signIn } from "../../auth";
+import { DEFAULT_LOGIN_REDIRECT } from "../../route";
 import { initializeDB } from "./initializeDB";
 import clientPromise from "./mongodb";
-import { CreateFeedbackSchema } from "./schema";
+import {
+  CreateFeedbackSchema,
+  LoginFormSchema,
+  RegisterFormSchema,
+} from "./schema";
 
-export type State = {
-  errors?: {
-    title: string[];
-    description?: string[];
-    category?: string[];
-    status?: string[];
-  };
-  message?: string | null;
+type Fields = z.infer<typeof LoginFormSchema>;
+type FormState<T extends Record<string, any>> = {
+  errors: Partial<Record<keyof T, string[]>> | null;
+  status: "error" | "success" | null;
+  formError: string | null;
 };
+type LoginFormState = FormState<Fields>;
+type RegisterFormFields = z.infer<typeof RegisterFormSchema>;
+type RegisterFormState = FormState<RegisterFormFields>;
+
+type CreateFeedbackFormFields = z.infer<typeof CreateFeedbackSchema>;
+type CreateFeedbackFormState = FormState<CreateFeedbackFormFields>;
 
 export async function addComments({
   comments,
@@ -142,9 +153,9 @@ export const addLikes = async (feedbackId: string) => {
 export const createFeedback = async (
   status: string,
   category: string,
-  _state: State,
+  _state: CreateFeedbackFormState,
   formData: FormData
-) => {
+): Promise<CreateFeedbackFormState> => {
   const title = formData.get("title");
   const description = formData.get("description");
 
@@ -158,7 +169,8 @@ export const createFeedback = async (
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Create Feedback.",
+      status: "error",
+      formError: null,
     };
   }
 
@@ -172,8 +184,9 @@ export const createFeedback = async (
     });
   } catch (error: any) {
     return {
-      errors: {},
-      message: "Failed to Create Feedback.",
+      errors: null,
+      formError: "Failed to Create Feedback.",
+      status: "error",
     };
   }
   revalidatePath("/feedback");
@@ -184,9 +197,9 @@ export const editFeedback = async (
   feedbackId: string,
   status: string,
   category: string,
-  _state: State,
+  _state: CreateFeedbackFormState,
   formData: FormData
-) => {
+): Promise<CreateFeedbackFormState> => {
   const title = formData.get("title");
   const description = formData.get("description");
 
@@ -200,7 +213,8 @@ export const editFeedback = async (
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Create Feedback.",
+      status: "error",
+      formError: null,
     };
   }
 
@@ -216,10 +230,10 @@ export const editFeedback = async (
       }
     );
   } catch (error: any) {
-    console.log("error", error);
     return {
-      errors: {},
-      message: "Failed to Create Feedback.",
+      errors: null,
+      formError: "Failed to Create Feedback.",
+      status: "error",
     };
   }
   revalidatePath(`/feedback/${feedbackId}`);
@@ -277,4 +291,90 @@ export const deleteFeedback = async (feedbackId: string) => {
 
   revalidatePath(`/feedback`);
   redirect(`/feedback`);
+};
+
+export const loginAction = async (
+  prevState: LoginFormState,
+  formData: FormData
+): Promise<LoginFormState> => {
+  const validatedFields = LoginFormSchema.safeParse({
+    ...Object.fromEntries(formData.entries()),
+  });
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      status: "error",
+      formError: null,
+    };
+  }
+  const { email, password } = validatedFields.data;
+  try {
+    await signIn("credentials", {
+      email,
+      password,
+      redirectTo: DEFAULT_LOGIN_REDIRECT,
+    });
+    return {
+      errors: null,
+      status: "success",
+      formError: null,
+    };
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case "CredentialsSignin":
+          return {
+            errors: null,
+            status: "error",
+            formError: "Invalid Credentials",
+          };
+        default:
+          return {
+            errors: null,
+            status: "error",
+            formError: "Something went wrong. Please try again.",
+          };
+      }
+    }
+    throw error;
+  }
+};
+
+export const registerAction = async (
+  prevState: RegisterFormState,
+  formData: FormData
+): Promise<RegisterFormState> => {
+  const validatedFields = RegisterFormSchema.safeParse({
+    ...Object.fromEntries(formData.entries()),
+  });
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      status: "error",
+      formError: null,
+    };
+  }
+  const { name, email, password, username } = validatedFields.data;
+  try {
+    await initializeDB();
+    const existingUser = await UserModel.findOne({ email });
+    if (!isEmpty(existingUser)) {
+      return {
+        errors: null,
+        status: "error",
+        formError: "User Already Exists",
+      };
+    }
+    const user = await UserModel.create({ name, username, email, password });
+    const hash = await bcrypt.hash(password, 10);
+    user.password = hash;
+    await user.save();
+    return { errors: null, status: "success", formError: null };
+  } catch (error) {
+    return {
+      errors: null,
+      status: "error",
+      formError: "Something went wrong. Please try again.",
+    };
+  }
 };

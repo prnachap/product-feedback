@@ -2,6 +2,7 @@
 
 import { category, status } from "@/constants";
 import { createFeedback } from "@/lib/actions";
+import { Alert } from "@mui/material";
 import { isEmpty } from "lodash";
 import { useEffect, useRef, useState } from "react";
 import { useFormState } from "react-dom";
@@ -37,7 +38,8 @@ const CreateFeedbackForm: React.FC<CreateFeedbackFormProps> = ({ title }) => {
       title: [],
       description: [],
     },
-    message: null,
+    status: null,
+    formError: null,
   });
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -48,12 +50,13 @@ const CreateFeedbackForm: React.FC<CreateFeedbackFormProps> = ({ title }) => {
   const categoryError = state?.errors?.category;
   const statusError = state?.errors?.status;
   const descriptionError = state?.errors?.description;
-  const formError = Array(1).fill(state?.message);
+  const formError = state?.formError;
 
   const hasTitleError = Boolean(titleError?.length);
   const hasCategoryError = Boolean(categoryError?.length);
   const hasStatusError = Boolean(statusError?.length);
   const hasDescriptionError = Boolean(descriptionError?.length);
+  const hasFormError = Boolean(formError);
 
   useEffect(() => {
     if (isEmpty(state?.errors) || !formRef.current) return;
@@ -153,7 +156,7 @@ const CreateFeedbackForm: React.FC<CreateFeedbackFormProps> = ({ title }) => {
             />
             <ErrorList id="description-error" errors={descriptionError} />
           </fieldset>
-          <ErrorList id="form-error" errors={formError} />
+          {hasFormError && <Alert severity="error">{formError}</Alert>}
           <div>
             <div className="flex flex-col-reverse justify-center gap-4 mt-4 md:flex-row md:justify-end">
               <StyledButton className="btn-tertiary" type="reset">

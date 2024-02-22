@@ -1,7 +1,7 @@
 "use client";
 
 import useFocusOnFormError from "@/hooks/useFocusOnFormError";
-import { loginAction } from "@/lib/actions";
+import { registerAction } from "@/lib/actions";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import GoogleIcon from "@mui/icons-material/Google";
 import clsx from "clsx";
@@ -15,17 +15,22 @@ import ErrorList from "./ErrorLists";
 import FormSubmissionButton from "./FormSubmissionButton";
 import Input from "./Input";
 
-const LoginForm = () => {
+const RegisterForm = () => {
   const formRef = useRef<HTMLFormElement>(null);
-  const [formState, dispatch] = useFormState(loginAction, {
+  const [formState, dispatch] = useFormState(registerAction, {
     errors: null,
     status: null,
     formError: null,
   });
 
+  const nameError = formState?.errors?.name;
+  const userNameError = formState?.errors?.username;
   const emailError = formState?.errors?.email;
   const passwordError = formState?.errors?.password;
   const formError = formState?.formError;
+
+  const hasNameError = Boolean(nameError?.length);
+  const hasUserNameError = Boolean(userNameError?.length);
   const hasEmailError = Boolean(emailError?.length);
   const hasPasswordError = Boolean(passwordError?.length);
   const hasFormError = Boolean(formError);
@@ -38,10 +43,40 @@ const LoginForm = () => {
     <CustomCard className="flex flex-col gap-4">
       <form
         ref={formRef}
-        id="login-form"
+        id="register-form"
         action={dispatch}
         className="flex flex-col gap-4"
       >
+        <div>
+          <label htmlFor="name" className={clsx(`input-label !mb-2`)}>
+            Name
+          </label>
+          <Input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="e.g John Doe"
+            aria-describedby="name-error"
+            aria-invalid={hasNameError || undefined}
+            className={hasNameError ? `!border-jasper` : ""}
+          />
+          <ErrorList id="name-error" errors={nameError} />
+        </div>
+        <div>
+          <label htmlFor="username" className={clsx(`input-label !mb-2`)}>
+            Username
+          </label>
+          <Input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="e.g johndoe"
+            aria-describedby="username-error"
+            aria-invalid={hasUserNameError || undefined}
+            className={hasUserNameError ? `!border-jasper` : ""}
+          />
+          <ErrorList id="username-error" errors={userNameError} />
+        </div>
         <div>
           <label htmlFor="email" className={clsx(`input-label !mb-2`)}>
             Email
@@ -75,9 +110,9 @@ const LoginForm = () => {
         {hasFormError && (
           <AlertCard severity={alertSeverity} message={formState.formError} />
         )}
-        <FormSubmissionButton title="Login" form="login-form" />
+        <FormSubmissionButton title="Register" form="register-form" />
       </form>
-      <CustomDivider title="Or,Login with" />
+      <CustomDivider title="Or,Register with" />
       <div className="flex justify-between items-center gap-2">
         <button className="btn-tertiary !w-full">
           <GoogleIcon />
@@ -87,16 +122,16 @@ const LoginForm = () => {
         </button>
       </div>
       <div className="flex justify-center">
-        <p className="body-two-text">Don&apos;t have an account? </p>
+        <p className="body-two-text">Already have an account? </p>
         <Link
-          href="/auth/register"
+          href="/auth/login"
           className="bg-transparent hover:underline text-dark-blue-gray font-bold border-none transition-all ease-in ml-1"
         >
-          Register
+          SignIn
         </Link>
       </div>
     </CustomCard>
   );
 };
 
-export default LoginForm;
+export default RegisterForm;
