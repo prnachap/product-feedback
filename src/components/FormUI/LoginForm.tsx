@@ -2,10 +2,9 @@
 
 import useFocusOnFormError from "@/hooks/useFocusOnFormError";
 import { loginAction } from "@/lib/actions";
-import GitHubIcon from "@mui/icons-material/GitHub";
-import GoogleIcon from "@mui/icons-material/Google";
 import clsx from "clsx";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useRef } from "react";
 import { useFormState } from "react-dom";
 import AlertCard from "../UI/AlertCard";
@@ -14,6 +13,7 @@ import CustomDivider from "../UI/CustomDivider";
 import ErrorList from "./ErrorLists";
 import FormSubmissionButton from "./FormSubmissionButton";
 import Input from "./Input";
+import Social from "./Social";
 
 const LoginForm = () => {
   const formRef = useRef<HTMLFormElement>(null);
@@ -22,7 +22,8 @@ const LoginForm = () => {
     status: null,
     formError: null,
   });
-
+  const searchParams = useSearchParams();
+  console.log(searchParams.get("error"), "searchparans");
   const emailError = formState?.errors?.email;
   const passwordError = formState?.errors?.password;
   const formError = formState?.formError;
@@ -78,14 +79,7 @@ const LoginForm = () => {
         <FormSubmissionButton title="Login" form="login-form" />
       </form>
       <CustomDivider title="Or,Login with" />
-      <div className="flex justify-between items-center gap-2">
-        <button className="btn-tertiary !w-full">
-          <GoogleIcon />
-        </button>
-        <button className="btn-tertiary !w-full ">
-          <GitHubIcon />
-        </button>
-      </div>
+      <Social />
       <div className="flex justify-center">
         <p className="body-two-text">Don&apos;t have an account? </p>
         <Link

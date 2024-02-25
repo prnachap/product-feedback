@@ -1,4 +1,4 @@
-import { Schema, model, models } from "mongoose";
+import { Document, Schema, model, models } from "mongoose";
 
 interface IAccountSchema {
   userId: Schema.Types.ObjectId;
@@ -14,7 +14,12 @@ interface IAccountSchema {
   session_state?: string;
 }
 
-const AccountSchema = new Schema<IAccountSchema>(
+export interface IAccountModel extends IAccountSchema, Document {
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const AccountSchema = new Schema<IAccountModel>(
   {
     type: {
       type: String,
@@ -42,5 +47,5 @@ const AccountSchema = new Schema<IAccountSchema>(
   }
 );
 
-const AccountModel = models.Account || model("Account", AccountSchema);
+const AccountModel = models?.Account || model("Account", AccountSchema);
 export default AccountModel;

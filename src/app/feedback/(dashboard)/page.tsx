@@ -7,6 +7,7 @@ const Home = async ({
 }) => {
   const sortBy = searchParams?.sort ?? "most upvotes";
   const filterCategory = searchParams?.category ?? "all";
+
   return (
     <main>
       <HomePageContainer category={filterCategory} sortBy={sortBy} />

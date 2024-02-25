@@ -1,3 +1,5 @@
+import { initializeDB } from "@/lib/initializeDB";
+import UserModel from "@/models/user.model";
 import axios from "axios";
 import { CommentPayloadType, FeedbackApiResType } from "../..";
 import { END_POINTS, FORM_INITIAL_STATE } from "../constants";
@@ -102,4 +104,22 @@ export const addReply = async (payload: {
     }
   );
   return data;
+};
+
+export const getUserById = async (userId: string) => {
+  try {
+    await initializeDB();
+    return await UserModel.findById(
+      { _id: userId },
+      {
+        password: 0,
+        _createdAt: 0,
+        updatedAt: 0,
+        emailVerified: 0,
+        posts: 0,
+      }
+    );
+  } catch (error) {
+    return null;
+  }
 };

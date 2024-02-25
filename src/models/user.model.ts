@@ -1,14 +1,14 @@
 import mongoose, { Document, model, models } from "mongoose";
-import { IFeedbackModel } from "./feedback.model";
 
 export interface IUser {
   name: string;
-  username: string;
+  username?: string;
   email: string;
   password?: string;
   emailVerified?: boolean;
   image?: string;
-  posts: IFeedbackModel["_id"][];
+  userRole: "user" | "admin";
+  posts?: string[];
   accounts?: string[];
 }
 
@@ -24,8 +24,6 @@ const UserSchema = new mongoose.Schema<IUserModel>(
     },
     username: {
       type: String,
-      required: true,
-      unique: true,
     },
     email: {
       type: String,
@@ -41,7 +39,13 @@ const UserSchema = new mongoose.Schema<IUserModel>(
     image: {
       type: String,
     },
+    userRole: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
     posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Feedback" }],
+    accounts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Account" }],
   },
   { timestamps: true }
 );

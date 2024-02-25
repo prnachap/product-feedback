@@ -9,7 +9,7 @@ export const publicRoutes = ["/"];
  * @description routes that are used for authentication
  * @type {string[]}
  */
-export const authRoutes = ["/auth/login", "/auth/register"];
+export const authRoutes = ["/auth/login", "/auth/register", "/auth/error"];
 
 /**
  * @description The prefix is for API authentication routes,

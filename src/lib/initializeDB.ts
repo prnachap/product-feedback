@@ -8,6 +8,5 @@ export async function initializeDB() {
     await connect(dbURI, {
       dbName: "product-feedback",
     });
-    console.log("connected");
   }
 }
