@@ -10,7 +10,7 @@ import {
   FeedbackType,
   RoadMapStatsType,
 } from "../..";
-import { initializeDB } from "./initializeDB";
+import initializeDB from "./initializeDB";
 
 function getSortingOrder(sortBy: string) {
   switch (sortBy) {

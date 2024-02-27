@@ -4,7 +4,6 @@ import useFocusOnFormError from "@/hooks/useFocusOnFormError";
 import { loginAction } from "@/lib/actions";
 import clsx from "clsx";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useRef } from "react";
 import { useFormState } from "react-dom";
 import AlertCard from "../UI/AlertCard";
@@ -22,8 +21,7 @@ const LoginForm = () => {
     status: null,
     formError: null,
   });
-  const searchParams = useSearchParams();
-  console.log(searchParams.get("error"), "searchparans");
+
   const emailError = formState?.errors?.email;
   const passwordError = formState?.errors?.password;
   const formError = formState?.formError;

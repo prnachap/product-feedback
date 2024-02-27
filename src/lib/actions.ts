@@ -4,6 +4,10 @@ import { ERROR_MESSAGES } from "@/constants/errorMessages";
 import CommentModel, { ICommentModel } from "@/models/comment.model";
 import FeedbackModel, { IFeedbackModel } from "@/models/feedback.model";
 import UserModel, { IUserModel } from "@/models/user.model";
+import { findUser, updateUser } from "@/services/user.service";
+import { deleteToken, findToken } from "@/services/verification.service";
+import { sendVerificationEmail } from "@/utils/mail";
+import { generateVerificationToken } from "@/utils/verificationToken";
 import bcrypt from "bcryptjs";
 import { gte, isEmpty, isEqual } from "lodash";
 import { ObjectId } from "mongodb";
@@ -14,7 +18,7 @@ import { z } from "zod";
 import { FeedbackType } from "../..";
 import { signIn, signOut } from "../../auth";
 import { DEFAULT_LOGIN_REDIRECT } from "../../route";
-import { initializeDB } from "./initializeDB";
+import initializeDB from "./initializeDB";
 import clientPromise from "./mongodb";
 import {
   CreateFeedbackSchema,
@@ -308,6 +312,26 @@ export const loginAction = async (
     };
   }
   const { email, password } = validatedFields.data;
+  const existingUser = await findUser({ email });
+  if (!existingUser || !existingUser.email || !existingUser.password) {
+    return {
+      errors: null,
+      status: "error",
+      formError: "Invalid Credentials",
+    };
+  }
+
+  if (!existingUser.emailVerified) {
+    await generateVerificationToken(existingUser.email);
+    const token = await generateVerificationToken(existingUser.email);
+    await sendVerificationEmail(existingUser.email, token);
+    return {
+      errors: null,
+      status: "success",
+      formError: "Confirmation email sent",
+    };
+  }
+
   try {
     await signIn("credentials", {
       email,
@@ -369,7 +393,13 @@ export const registerAction = async (
     const hash = await bcrypt.hash(password, 10);
     user.password = hash;
     await user.save();
-    return { errors: null, status: "success", formError: null };
+    const token = await generateVerificationToken(user.email);
+    await sendVerificationEmail(user.email, token);
+    return {
+      errors: null,
+      status: "success",
+      formError: "Confirmation email sent",
+    };
   } catch (error) {
     return {
       errors: null,
@@ -381,4 +411,42 @@ export const registerAction = async (
 
 export const logoutAction = async () => {
   await signOut();
+};
+
+export const verifyEmailAction = async (
+  token: string
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const existingToken = await findToken({ token });
+    const existingUser = await findUser({ email: existingToken?.email });
+
+    if (!existingToken?.token) {
+      console.log("existingTokenwitjinss", existingToken);
+      return { success: false, message: "Invalid token" };
+    }
+    if (!isEqual(existingToken?.token, token)) {
+      return { success: false, message: "Invalid token" };
+    }
+    if (new Date(existingToken?.expiry) < new Date()) {
+      return {
+        success: false,
+        message: "Token has expired. Please request a new one",
+      };
+    }
+    if (!existingUser) {
+      return { success: false, message: "Invalid email" };
+    }
+    await updateUser(
+      { email: existingUser.email },
+      { emailVerified: new Date(), email: existingToken.email },
+      { upsert: true }
+    );
+    await deleteToken({ token: existingToken.token });
+    return { success: true, message: "email verified" };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Something went wrong. Please try again",
+    };
+  }
 };

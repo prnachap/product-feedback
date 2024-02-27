@@ -1,18 +1,10 @@
 import clientPromise from "@/lib/mongodb";
-import UserModel, { IUserModel } from "@/models/user.model";
-import { getUserById } from "@/services";
+import { IUserModel } from "@/models/user.model";
+import { findUser, updateUser } from "@/services/user.service";
+import { Adapter } from "@auth/core/adapters";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
-import NextAuth, { DefaultSession } from "next-auth";
+import NextAuth from "next-auth";
 import authConfig from "./auth.config";
-
-export type ExtendedUser = DefaultSession["user"] & {
-  role: IUserModel["userRole"];
-};
-declare module "next-auth" {
-  interface Session {
-    user: ExtendedUser;
-  }
-}
 
 export const {
   handlers: { GET, POST },
@@ -25,15 +17,20 @@ export const {
     signOut: "/auth/signout",
     error: "/auth/error",
   },
+
   events: {
     async linkAccount({ user, account }) {
-      await UserModel.findOneAndUpdate(
-        { email: user.email },
-        { emailVerified: new Date() }
-      );
+      await updateUser({ email: user.email }, { emailVerified: new Date() });
     },
   },
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider !== "credentials") return true;
+      const existingUser = await findUser({ email: user.email });
+      if (!existingUser?.emailVerified) return false;
+      return true;
+    },
+
     async session({ session, token }) {
       if (token?.sub && session?.user) {
         session.user.id = token.sub;
@@ -45,13 +42,15 @@ export const {
     },
     async jwt({ token }) {
       if (!token?.sub) return token;
-      const existingUser = await getUserById(token.sub);
+      const existingUser = await findUser({ _id: token.sub });
       if (!existingUser) return token;
       token.role = existingUser?.userRole ?? "user";
       return token;
     },
   },
-  adapter: MongoDBAdapter(clientPromise),
+  adapter: MongoDBAdapter(clientPromise, {
+    databaseName: "product-feedback",
+  }) as Adapter,
   session: { strategy: "jwt" },
   ...authConfig,
 });
