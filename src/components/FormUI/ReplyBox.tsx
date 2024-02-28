@@ -1,7 +1,7 @@
 "use client";
 
-import { postRepliesToComment } from "@/lib/actions";
-import { CommentFormSchema } from "@/lib/schema";
+import { postRepliesToComment } from "@/actions/feedback.action";
+import { CommentFormSchema } from "@/schema/feedback.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams } from "next/navigation";
 import { useState } from "react";

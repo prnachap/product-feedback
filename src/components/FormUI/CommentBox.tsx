@@ -1,7 +1,7 @@
 "use client";
 
-import { addComments } from "@/lib/actions";
-import { CommentFormSchema } from "@/lib/schema";
+import { addComments } from "@/actions/feedback.action";
+import { CommentFormSchema } from "@/schema/feedback.schema";
 import { getRemainingWordCount } from "@/utils/formElementUtils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams } from "next/navigation";

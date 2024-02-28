@@ -1,7 +1,7 @@
 "use client";
 
 import { category, status } from "@/constants";
-import { createFeedback } from "@/lib/actions";
+import { createFeedback } from "@/actions/feedback.action";
 import { Alert } from "@mui/material";
 import { isEmpty } from "lodash";
 import { useEffect, useRef, useState } from "react";

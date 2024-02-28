@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteFeedback } from "@/lib/actions";
+import { deleteFeedback } from "@/actions/feedback.action";
 import StyledButton from "../Button/StyledButton";
 
 const DeleteForm = ({ feedbackId }: { feedbackId: string }) => {
