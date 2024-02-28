@@ -1,4 +1,4 @@
-import { getCommentsByFeedbackId } from "@/lib/data";
+import { getCommentsByFeedbackId } from "@/data/feedback.data";
 import { isEmpty } from "lodash";
 import CustomCard from "../UI/CustomCard";
 import Comments from "./Comments";

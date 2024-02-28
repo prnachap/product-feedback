@@ -1,4 +1,4 @@
-import { addLikes } from "@/lib/actions";
+import { addLikes } from "@/actions/feedback.action";
 import clsx from "clsx";
 import { gte, lte } from "lodash";
 import Link from "next/link";

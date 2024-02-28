@@ -1,6 +1,6 @@
 "use client";
 
-import { verifyEmailAction } from "@/lib/actions";
+import { verifyEmailAction } from "@/actions/auth.action";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import AnimatedLoader from "../AnimatedLoader/AnimatedLoader";
@@ -55,7 +55,7 @@ const EmailVerificationForm = ({ token }: { token: string }) => {
       {renderLoader()}
       {renderAlertCard()}
       <Link href="/auth/login">
-        <button className="btn-primary">back to login</button>
+        <button className="btn-primary">Back to login</button>
       </Link>
     </CustomCard>
   );

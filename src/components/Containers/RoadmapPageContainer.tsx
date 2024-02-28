@@ -1,4 +1,4 @@
-import { getFeedbackByStatus } from "@/lib/data";
+import { getFeedbackByStatus } from "@/data/feedback.data";
 import { Suspense } from "react";
 import RoadmapNav from "../Navbar/RoadmapNav";
 import RoadmapTabs from "../RoadmapTabs/RoadmapTabs";

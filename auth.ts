@@ -5,6 +5,7 @@ import { Adapter } from "@auth/core/adapters";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import NextAuth from "next-auth";
 import authConfig from "./auth.config";
+import { AUTH_ROUTES } from "@/constants";
 
 export const {
   handlers: { GET, POST },
@@ -13,9 +14,9 @@ export const {
   signOut,
 } = NextAuth({
   pages: {
-    signIn: "/auth/signin",
-    signOut: "/auth/signout",
-    error: "/auth/error",
+    signIn: AUTH_ROUTES.LOGIN,
+    signOut: AUTH_ROUTES.LOGOUT,
+    error: AUTH_ROUTES.AUTH_ERROR,
   },
 
   events: {

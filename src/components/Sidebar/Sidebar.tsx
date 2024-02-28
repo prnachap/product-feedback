@@ -1,4 +1,4 @@
-import { logoutAction } from "@/lib/actions";
+import { logoutAction } from "@/actions/auth.action";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
 import Box from "@mui/material/Box";

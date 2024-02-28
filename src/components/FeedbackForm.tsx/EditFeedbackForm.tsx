@@ -1,10 +1,10 @@
 "use client";
 
+import { editFeedback } from "@/actions/feedback.action";
 import {
   category as categoryOptions,
   status as statusOptions,
 } from "@/constants";
-import { editFeedback } from "@/lib/actions";
 import { isEmpty } from "lodash";
 import { useEffect, useRef, useState } from "react";
 import { useFormState } from "react-dom";

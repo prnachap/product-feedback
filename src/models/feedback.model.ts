@@ -44,6 +44,7 @@ const FeedbackSchema = new mongoose.Schema(
 );
 
 FeedbackSchema.pre(/^find|save/, function (next) {
+  //@ts-ignore
   this.populate([
     { path: "user", select: "username name" },
     { path: "comments", select: "content" },

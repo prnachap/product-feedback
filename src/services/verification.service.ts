@@ -1,4 +1,4 @@
-import mongooseConnect from "@/lib/initializeDB";
+import { mongooseConnect } from "@/lib/mongoose";
 import VerificationModel, { IVerification } from "@/models/verification.model";
 import { FilterQuery, QueryOptions, UpdateQuery } from "mongoose";
 

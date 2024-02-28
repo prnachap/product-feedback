@@ -1,7 +1,8 @@
 "use client";
 
+import { registerAction } from "@/actions/auth.action";
+import { AUTH_ROUTES } from "@/constants";
 import useFocusOnFormError from "@/hooks/useFocusOnFormError";
-import { registerAction } from "@/lib/actions";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import GoogleIcon from "@mui/icons-material/Google";
 import clsx from "clsx";
@@ -124,7 +125,7 @@ const RegisterForm = () => {
       <div className="flex justify-center">
         <p className="body-two-text">Already have an account? </p>
         <Link
-          href="/auth/login"
+          href={AUTH_ROUTES.LOGIN}
           className="bg-transparent hover:underline text-dark-blue-gray font-bold border-none transition-all ease-in ml-1"
         >
           SignIn

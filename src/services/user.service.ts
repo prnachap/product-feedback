@@ -1,13 +1,17 @@
-import UserModel, { IUser } from "@/models/user.model";
+import UserModel, { IUser, IUserModel } from "@/models/user.model";
 import { FilterQuery, QueryOptions, UpdateQuery } from "mongoose";
-import moongooseConnect from "../lib/initializeDB";
+import { mongooseConnect } from "../lib/mongoose";
+
+export const createUser = async (input: Partial<IUser>) => {
+  return await UserModel.create<IUserModel>(input);
+};
 
 export const findUser = async (
   query: FilterQuery<IUser>,
   options?: QueryOptions<IUser>
 ) => {
-  await moongooseConnect();
-  return await UserModel.findOne<IUser>(query, {}, options ?? {});
+  await mongooseConnect();
+  return await UserModel.findOne<IUserModel>(query, {}, options ?? {});
 };
 
 export const updateUser = async (
@@ -15,7 +19,7 @@ export const updateUser = async (
   updateQuery: UpdateQuery<IUser>,
   queryOptions?: QueryOptions<IUser>
 ) => {
-  await moongooseConnect();
+  await mongooseConnect();
   return await UserModel.findOneAndUpdate(
     filteQuery,
     updateQuery,

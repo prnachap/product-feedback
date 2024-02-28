@@ -1,8 +1,8 @@
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 
-import mongooseConnect from "@/lib/initializeDB";
-import { LoginFormSchema } from "@/lib/schema";
+import { mongooseConnect } from "@/lib/mongoose";
+import { LoginFormSchema } from "@/schema/auth.schema";
 import { findUser } from "@/services/user.service";
 import bcrypt from "bcryptjs";
 import type { NextAuthConfig } from "next-auth";

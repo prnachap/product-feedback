@@ -10,6 +10,8 @@ export interface IUser {
   userRole: "user" | "admin";
   posts?: string[];
   accounts?: string[];
+  passwordResetToken: string | null;
+  passwordResetTokenExpires: Date | null;
 }
 
 export interface IUserModel extends Document, IUser {
@@ -43,6 +45,16 @@ const UserSchema = new mongoose.Schema<IUserModel>(
       type: String,
       enum: ["user", "admin"],
       default: "user",
+    },
+    passwordResetToken: {
+      type: String,
+      required: true,
+      default: null,
+    },
+    passwordResetTokenExpires: {
+      type: Date,
+      required: true,
+      default: null,
     },
     posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Feedback" }],
     accounts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Account" }],

@@ -28,6 +28,7 @@ const CommentSchema = new mongoose.Schema(
 );
 
 CommentSchema.pre(/^find/, function (next) {
+  //@ts-ignore
   this.populate([
     { path: "user", select: "username name" },
     { path: "comments", select: "content" },

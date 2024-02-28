@@ -1,4 +1,4 @@
-import { getFeedbackById } from "@/lib/data";
+import { getFeedbackById } from "@/data/feedback.data";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";

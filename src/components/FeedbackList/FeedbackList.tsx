@@ -1,4 +1,4 @@
-import { getFeedbackSummary } from "@/lib/data";
+import { getFeedbackSummary } from "@/data/feedback.data";
 import { isEmpty } from "lodash";
 import PlusIcon from "../../../public/assets/shared/icon-plus.svg";
 import StyledButton from "../Button/StyledButton";

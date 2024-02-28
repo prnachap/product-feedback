@@ -1,7 +1,6 @@
 "use client";
 
-import { loginAction } from "@/actions/auth.action";
-import { AUTH_ROUTES } from "@/constants";
+import { resetPasswordAction } from "@/actions/auth.action";
 import useFocusOnFormError from "@/hooks/useFocusOnFormError";
 import clsx from "clsx";
 import Link from "next/link";
@@ -9,24 +8,21 @@ import { useRef } from "react";
 import { useFormState } from "react-dom";
 import AlertCard from "../UI/AlertCard";
 import CustomCard from "../UI/CustomCard";
-import CustomDivider from "../UI/CustomDivider";
 import ErrorList from "./ErrorLists";
 import FormSubmissionButton from "./FormSubmissionButton";
 import Input from "./Input";
-import Social from "./Social";
 
-const LoginForm = () => {
+const PasswordResetForm = ({ token }: { token: string }) => {
   const formRef = useRef<HTMLFormElement>(null);
-  const [formState, dispatch] = useFormState(loginAction, {
+  const resetAction = resetPasswordAction.bind(null, token);
+  const [formState, dispatch] = useFormState(resetAction, {
     errors: null,
     status: null,
     formError: null,
   });
 
-  const emailError = formState?.errors?.email;
   const passwordError = formState?.errors?.password;
   const formError = formState?.formError;
-  const hasEmailError = Boolean(emailError?.length);
   const hasPasswordError = Boolean(passwordError?.length);
   const hasFormError = Boolean(formError);
   const alertSeverity = formState.status === "error" ? "error" : "success";
@@ -36,27 +32,13 @@ const LoginForm = () => {
 
   return (
     <CustomCard className="flex flex-col gap-4">
+      <p className="tertiary-text text-center">Reset your password?</p>
       <form
         ref={formRef}
         id="login-form"
         action={dispatch}
         className="flex flex-col gap-4"
       >
-        <div>
-          <label htmlFor="email" className={clsx(`input-label !mb-2`)}>
-            Email
-          </label>
-          <Input
-            type="email"
-            id="email"
-            name="email"
-            placeholder="johndoe@mail.com"
-            aria-describedby="email-error"
-            aria-invalid={hasEmailError || undefined}
-            className={hasEmailError ? `!border-jasper` : ""}
-          />
-          <ErrorList id="email-error" errors={emailError} />
-        </div>
         <div>
           <label htmlFor="password" className={clsx(`input-label !mb-2`)}>
             Password
@@ -72,33 +54,16 @@ const LoginForm = () => {
           />
           <ErrorList id="password-error" errors={passwordError} />
         </div>
-        <div>
-          <Link
-            href={AUTH_ROUTES.RESET_PASSWORD}
-            className="btn-back-primary !px-0"
-            prefetch={true}
-          >
-            Forgot password?
-          </Link>
-        </div>
         {hasFormError && (
           <AlertCard severity={alertSeverity} message={formState.formError} />
         )}
-        <FormSubmissionButton title="Login" form="login-form" />
+        <FormSubmissionButton title="Reset Password" form="login-form" />
       </form>
-      <CustomDivider title="Or,Login with" />
-      <Social />
-      <div className="flex justify-center">
-        <p className="body-two-text">Don&apos;t have an account? </p>
-        <Link
-          href={AUTH_ROUTES.REGISTER}
-          className="bg-transparent hover:underline text-dark-blue-gray font-bold border-none transition-all ease-in ml-1"
-        >
-          Register
-        </Link>
-      </div>
+      <Link href="/auth/login" className="w-full">
+        <button className="btn-back-secondary w-full">Back to login</button>
+      </Link>
     </CustomCard>
   );
 };
 
-export default LoginForm;
+export default PasswordResetForm;

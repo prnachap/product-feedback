@@ -1,4 +1,4 @@
-import { getFeedbackById } from "@/lib/data";
+import { getFeedbackById } from "@/data/feedback.data";
 import { notFound } from "next/navigation";
 import BackButton from "../Button/BackButton";
 import EditFeedbackForm from "../FeedbackForm.tsx/EditFeedbackForm";

@@ -1,53 +1,45 @@
 "use server";
 
 import { ERROR_MESSAGES } from "@/constants/errorMessages";
+import clientPromise from "@/lib/mongodb";
+import { mongooseConnect } from "@/lib/mongoose";
 import CommentModel, { ICommentModel } from "@/models/comment.model";
 import FeedbackModel, { IFeedbackModel } from "@/models/feedback.model";
 import UserModel, { IUserModel } from "@/models/user.model";
-import { findUser, updateUser } from "@/services/user.service";
-import { deleteToken, findToken } from "@/services/verification.service";
-import { sendVerificationEmail } from "@/utils/mail";
-import { generateVerificationToken } from "@/utils/verificationToken";
-import bcrypt from "bcryptjs";
+import { CreateFeedbackSchema } from "@/schema/feedback.schema";
 import { gte, isEmpty, isEqual } from "lodash";
 import { ObjectId } from "mongodb";
-import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { FeedbackType } from "../..";
-import { signIn, signOut } from "../../auth";
-import { DEFAULT_LOGIN_REDIRECT } from "../../route";
-import initializeDB from "./initializeDB";
-import clientPromise from "./mongodb";
-import {
-  CreateFeedbackSchema,
-  LoginFormSchema,
-  RegisterFormSchema,
-} from "./schema";
 
-type Fields = z.infer<typeof LoginFormSchema>;
 type FormState<T extends Record<string, any>> = {
   errors: Partial<Record<keyof T, string[]>> | null;
   status: "error" | "success" | null;
   formError: string | null;
 };
-type LoginFormState = FormState<Fields>;
-type RegisterFormFields = z.infer<typeof RegisterFormSchema>;
-type RegisterFormState = FormState<RegisterFormFields>;
 
 type CreateFeedbackFormFields = z.infer<typeof CreateFeedbackSchema>;
 type CreateFeedbackFormState = FormState<CreateFeedbackFormFields>;
 
+/**
+ * Adds comments to a feedback.
+ *
+ * @param {Object} params - The parameters for adding comments.
+ * @param {string} params.comments - The comments to be added.
+ * @param {string} params.feedbackId - The ID of the feedback to add comments to.
+ * @returns {Promise<{ success: boolean, error: string | null }>} - A promise that resolves to an object indicating the success status and any error message.
+ */
 export async function addComments({
   comments,
   feedbackId,
 }: {
   comments: string;
   feedbackId: string;
-}) {
+}): Promise<{ success: boolean; error: string | null }> {
   try {
-    await initializeDB();
+    await mongooseConnect();
     const feedback = await FeedbackModel.findOne<IFeedbackModel>({
       _id: feedbackId,
     });
@@ -72,11 +64,18 @@ export async function addComments({
     await feedback.save();
     revalidatePath(`/feedback/${feedbackId}`);
     return { success: true, error: null };
-  } catch (error: any) {
+  } catch (error: unknown) {
     return { success: false, error: ERROR_MESSAGES.ADD_COMMENTS_ERROR };
   }
 }
 
+/**
+ * Posts replies to a comment.
+ * @param feedbackId - The ID of the feedback.
+ * @param commentId - The ID of the comment.
+ * @param content - The content of the reply.
+ * @returns An object indicating the success status and error message (if any).
+ */
 export const postRepliesToComment = async ({
   feedbackId,
   commentId,
@@ -85,7 +84,7 @@ export const postRepliesToComment = async ({
   feedbackId: string;
   commentId: string;
   content: string;
-}) => {
+}): Promise<{ success: boolean; error: string | null }> => {
   try {
     const feedback = await FeedbackModel.findById<FeedbackType>(
       { _id: feedbackId },
@@ -119,7 +118,14 @@ export const postRepliesToComment = async ({
   }
 };
 
-export const addLikes = async (feedbackId: string) => {
+/**
+ * Adds likes to a feedback.
+ * @param feedbackId The ID of the feedback to add likes to.
+ * @returns An object indicating the success status and any error message.
+ */
+export const addLikes = async (
+  feedbackId: string
+): Promise<{ success: boolean; error: string | null }> => {
   try {
     const feedback = await FeedbackModel.findOne<IFeedbackModel>({
       _id: feedbackId,
@@ -154,6 +160,15 @@ export const addLikes = async (feedbackId: string) => {
   }
 };
 
+/**
+ * Creates feedback with the provided status, category, form state, and form data.
+ *
+ * @param status - The status of the feedback.
+ * @param category - The category of the feedback.
+ * @param _state - The form state for creating feedback.
+ * @param formData - The form data containing the feedback details.
+ * @returns A promise that resolves to the updated form state after creating the feedback.
+ */
 export const createFeedback = async (
   status: string,
   category: string,
@@ -197,6 +212,16 @@ export const createFeedback = async (
   redirect("/feedback");
 };
 
+/**
+ * Edits the feedback with the specified ID.
+ *
+ * @param feedbackId - The ID of the feedback to edit.
+ * @param status - The new status of the feedback.
+ * @param category - The new category of the feedback.
+ * @param _state - The current state of the feedback form.
+ * @param formData - The form data containing the updated feedback details.
+ * @returns A promise that resolves to the updated state of the feedback form.
+ */
 export const editFeedback = async (
   feedbackId: string,
   status: string,
@@ -245,6 +270,11 @@ export const editFeedback = async (
   redirect(`/feedback/${feedbackId}`);
 };
 
+/**
+ * Deletes a feedback and its associated comments from the database.
+ * @param feedbackId - The ID of the feedback to delete.
+ * @throws Error if the deletion fails.
+ */
 export const deleteFeedback = async (feedbackId: string) => {
   try {
     const client = await clientPromise;
@@ -295,158 +325,4 @@ export const deleteFeedback = async (feedbackId: string) => {
 
   revalidatePath(`/feedback`);
   redirect(`/feedback`);
-};
-
-export const loginAction = async (
-  prevState: LoginFormState,
-  formData: FormData
-): Promise<LoginFormState> => {
-  const validatedFields = LoginFormSchema.safeParse({
-    ...Object.fromEntries(formData.entries()),
-  });
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      status: "error",
-      formError: null,
-    };
-  }
-  const { email, password } = validatedFields.data;
-  const existingUser = await findUser({ email });
-  if (!existingUser || !existingUser.email || !existingUser.password) {
-    return {
-      errors: null,
-      status: "error",
-      formError: "Invalid Credentials",
-    };
-  }
-
-  if (!existingUser.emailVerified) {
-    await generateVerificationToken(existingUser.email);
-    const token = await generateVerificationToken(existingUser.email);
-    await sendVerificationEmail(existingUser.email, token);
-    return {
-      errors: null,
-      status: "success",
-      formError: "Confirmation email sent",
-    };
-  }
-
-  try {
-    await signIn("credentials", {
-      email,
-      password,
-      redirectTo: DEFAULT_LOGIN_REDIRECT,
-    });
-    return {
-      errors: null,
-      status: "success",
-      formError: null,
-    };
-  } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return {
-            errors: null,
-            status: "error",
-            formError: "Invalid Credentials",
-          };
-        default:
-          return {
-            errors: null,
-            status: "error",
-            formError: "Something went wrong. Please try again.",
-          };
-      }
-    }
-    throw error;
-  }
-};
-
-export const registerAction = async (
-  prevState: RegisterFormState,
-  formData: FormData
-): Promise<RegisterFormState> => {
-  const validatedFields = RegisterFormSchema.safeParse({
-    ...Object.fromEntries(formData.entries()),
-  });
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      status: "error",
-      formError: null,
-    };
-  }
-  const { name, email, password, username } = validatedFields.data;
-  try {
-    await initializeDB();
-    const existingUser = await UserModel.findOne({ email });
-    if (!isEmpty(existingUser)) {
-      return {
-        errors: null,
-        status: "error",
-        formError: "User Already Exists",
-      };
-    }
-    const user = await UserModel.create({ name, username, email, password });
-    const hash = await bcrypt.hash(password, 10);
-    user.password = hash;
-    await user.save();
-    const token = await generateVerificationToken(user.email);
-    await sendVerificationEmail(user.email, token);
-    return {
-      errors: null,
-      status: "success",
-      formError: "Confirmation email sent",
-    };
-  } catch (error) {
-    return {
-      errors: null,
-      status: "error",
-      formError: "Something went wrong. Please try again.",
-    };
-  }
-};
-
-export const logoutAction = async () => {
-  await signOut();
-};
-
-export const verifyEmailAction = async (
-  token: string
-): Promise<{ success: boolean; message: string }> => {
-  try {
-    const existingToken = await findToken({ token });
-    const existingUser = await findUser({ email: existingToken?.email });
-
-    if (!existingToken?.token) {
-      console.log("existingTokenwitjinss", existingToken);
-      return { success: false, message: "Invalid token" };
-    }
-    if (!isEqual(existingToken?.token, token)) {
-      return { success: false, message: "Invalid token" };
-    }
-    if (new Date(existingToken?.expiry) < new Date()) {
-      return {
-        success: false,
-        message: "Token has expired. Please request a new one",
-      };
-    }
-    if (!existingUser) {
-      return { success: false, message: "Invalid email" };
-    }
-    await updateUser(
-      { email: existingUser.email },
-      { emailVerified: new Date(), email: existingToken.email },
-      { upsert: true }
-    );
-    await deleteToken({ token: existingToken.token });
-    return { success: true, message: "email verified" };
-  } catch (error) {
-    return {
-      success: false,
-      message: "Something went wrong. Please try again",
-    };
-  }
 };

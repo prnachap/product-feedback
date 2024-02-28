@@ -1,8 +1,17 @@
-export const BASE_URL = "http://localhost:5000";
-export const END_POINTS = {
-  GET_FEEDBACKS: `${BASE_URL}/api/v1/feedbacks`,
-  GET_USER: `${BASE_URL}/api/v1/auth/me`,
-  LOGOUT: `${BASE_URL}/api/v1/auth/logout`,
-  CREATE_FEEDBACK: `${BASE_URL}/api/v1/feedbacks`,
-  ADD_COMMENT: `${BASE_URL}/api/v1/feedbacks/comments`,
+export const BASE_URL = "http://localhost:3000";
+
+export const API_AUTH_PREFIX = "/api/auth";
+
+export const ROUTES = {
+  HOME: "/feedback",
+};
+
+export const AUTH_ROUTES = {
+  LOGIN: "/auth/login",
+  REGISTER: "/auth/register",
+  RESET_PASSWORD: "/auth/reset-password",
+  NEW_PASSWORD: "/auth/new-password",
+  NEW_VERIFICATION: "/auth/new-verification",
+  AUTH_ERROR: "/auth/error",
+  LOGOUT: "/auth/logout",
 };
