@@ -1,6 +1,6 @@
 "use server";
 
-import { ERROR_MESSAGES } from "@/constants/errorMessages";
+import { MESSAGES } from "@/constants/messages";
 import clientPromise from "@/lib/mongodb";
 import { mongooseConnect } from "@/lib/mongoose";
 import CommentModel, { ICommentModel } from "@/models/comment.model";
@@ -53,7 +53,7 @@ export async function addComments({
     }
 
     if (isEmpty(user)) {
-      throw new Error(ERROR_MESSAGES.USER_NOT_FOUND);
+      throw new Error(MESSAGES.USER_NOT_FOUND);
     }
 
     const comment = await CommentModel.create({
@@ -65,7 +65,7 @@ export async function addComments({
     revalidatePath(`/feedback/${feedbackId}`);
     return { success: true, error: null };
   } catch (error: unknown) {
-    return { success: false, error: ERROR_MESSAGES.ADD_COMMENTS_ERROR };
+    return { success: false, error: MESSAGES.ADD_COMMENTS_ERROR };
   }
 }
 
@@ -99,13 +99,13 @@ export const postRepliesToComment = async ({
     });
 
     if (isEmpty(feedback)) {
-      throw new Error(ERROR_MESSAGES.FEEDBACK_NOT_FOUND);
+      throw new Error(MESSAGES.FEEDBACK_NOT_FOUND);
     }
     if (isEmpty(user)) {
-      throw new Error(ERROR_MESSAGES.USER_NOT_FOUND);
+      throw new Error(MESSAGES.USER_NOT_FOUND);
     }
     if (isEmpty(comment)) {
-      throw new Error(ERROR_MESSAGES.COMMENT_NOT_FOUND);
+      throw new Error(MESSAGES.COMMENT_NOT_FOUND);
     }
 
     const reply = await CommentModel.create({ content, user: user.id });
@@ -114,7 +114,7 @@ export const postRepliesToComment = async ({
     revalidatePath(`/feedback/${feedbackId}`);
     return { success: true, error: null };
   } catch (error: any) {
-    return { success: false, error: ERROR_MESSAGES.POST_REPLY_ERROR };
+    return { success: false, error: MESSAGES.POST_REPLY_ERROR };
   }
 };
 
@@ -135,11 +135,11 @@ export const addLikes = async (
     });
 
     if (!feedback) {
-      throw new Error(ERROR_MESSAGES.FEEDBACK_NOT_FOUND);
+      throw new Error(MESSAGES.FEEDBACK_NOT_FOUND);
     }
 
     if (!user) {
-      throw new Error(ERROR_MESSAGES.USER_NOT_FOUND);
+      throw new Error(MESSAGES.USER_NOT_FOUND);
     }
 
     const userIndex = feedback?.upvotes.findIndex((user) => {
@@ -156,7 +156,7 @@ export const addLikes = async (
     revalidatePath(`/feedback/${feedbackId}`);
     return { success: true, error: null };
   } catch (error: any) {
-    return { success: false, error: ERROR_MESSAGES.ADD_UPVOTES_ERROR };
+    return { success: false, error: MESSAGES.ADD_UPVOTES_ERROR };
   }
 };
 

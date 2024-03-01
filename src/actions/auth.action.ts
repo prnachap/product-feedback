@@ -1,38 +1,32 @@
 "use server";
 
+import { MESSAGES } from "@/constants/messages";
+import { userRegistration } from "@/data/auth.data";
 import {
   LoginFormSchema,
   RegisterFormSchema,
   ResetFormSchema,
   ResetPasswordSchema,
 } from "@/schema/auth.schema";
-import { createUser, findUser, updateUser } from "@/services/user.service";
+import { findUser, updateUser } from "@/services/user.service";
 import { deleteToken, findToken } from "@/services/verification.service";
 import { sendPasswordResetToken, sendVerificationEmail } from "@/utils/mail";
+import { validateSchema } from "@/utils/validateSchema";
 import {
   generatePasswordResetToken,
   generateVerificationToken,
 } from "@/utils/verificationToken";
 import bcrypt from "bcryptjs";
-import { isEmpty, isEqual } from "lodash";
+import { isEqual } from "lodash";
 import { AuthError } from "next-auth";
-import { z } from "zod";
 import { signIn, signOut } from "../../auth";
 import { DEFAULT_LOGIN_REDIRECT } from "../../route";
-
-type Fields = z.infer<typeof LoginFormSchema>;
-type ResetFields = z.infer<typeof ResetFormSchema>;
-type ResetPasswordFields = z.infer<typeof ResetPasswordSchema>;
-type FormState<T extends Record<string, any>> = {
-  errors: Partial<Record<keyof T, string[]>> | null;
-  status: "error" | "success" | null;
-  formError: string | null;
-};
-type LoginFormState = FormState<Fields>;
-type RegisterFormFields = z.infer<typeof RegisterFormSchema>;
-type RegisterFormState = FormState<RegisterFormFields>;
-type ResetFormState = FormState<ResetFields>;
-type ResetPasswordFormState = FormState<ResetPasswordFields>;
+import {
+  LoginFormState,
+  RegisterFormState,
+  ResetFormState,
+  ResetPasswordFormState,
+} from "../../global";
 
 /**
  * Performs the login action with the provided form data.
@@ -45,14 +39,15 @@ export const loginAction = async (
   _prevState: LoginFormState,
   formData: FormData
 ): Promise<LoginFormState> => {
-  const validatedFields = LoginFormSchema.safeParse({
-    ...Object.fromEntries(formData.entries()),
+  const validatedFields = validateSchema({
+    schema: LoginFormSchema,
+    formData,
   });
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       status: "error",
-      formError: null,
+      formMessage: null,
     };
   }
   const { email, password } = validatedFields.data;
@@ -62,17 +57,21 @@ export const loginAction = async (
       return {
         errors: null,
         status: "error",
-        formError: "Invalid Credentials",
+        formMessage: MESSAGES.INVALID_CREDENTIALS,
       };
     }
 
     if (!existingUser.emailVerified) {
       const token = await generateVerificationToken(existingUser.email);
-      await sendVerificationEmail(existingUser.email, token);
+      await sendVerificationEmail(
+        existingUser.name,
+        existingUser.email,
+        token ?? ""
+      );
       return {
         errors: null,
         status: "success",
-        formError: "Confirmation email sent",
+        formMessage: MESSAGES.CONFIRMATION_EMAIL_SENT,
       };
     }
 
@@ -84,7 +83,7 @@ export const loginAction = async (
     return {
       errors: null,
       status: "success",
-      formError: null,
+      formMessage: null,
     };
   } catch (error) {
     if (error instanceof AuthError) {
@@ -93,13 +92,13 @@ export const loginAction = async (
           return {
             errors: null,
             status: "error",
-            formError: "Invalid Credentials",
+            formMessage: MESSAGES.INVALID_CREDENTIALS,
           };
         default:
           return {
             errors: null,
             status: "error",
-            formError: "Something went wrong. Please try again.",
+            formMessage: MESSAGES.SERVER_ERROR,
           };
       }
     }
@@ -118,42 +117,41 @@ export const registerAction = async (
   _prevState: RegisterFormState,
   formData: FormData
 ): Promise<RegisterFormState> => {
-  const validatedFields = RegisterFormSchema.safeParse({
-    ...Object.fromEntries(formData.entries()),
+  const validatedFields = validateSchema({
+    schema: RegisterFormSchema,
+    formData,
   });
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       status: "error",
-      formError: null,
+      formMessage: null,
     };
   }
-  const { name, email, password, username } = validatedFields.data;
+  const { name, email, password } = validatedFields.data;
   try {
-    const existingUser = await findUser({ email });
-    if (!isEmpty(existingUser)) {
-      return {
-        errors: null,
-        status: "error",
-        formError: "User Already Exists",
-      };
-    }
-    const user = await createUser({ name, username, email, password });
-    const hash = await bcrypt.hash(password, 10);
-    user.password = hash;
-    await user.save();
-    const token = await generateVerificationToken(user.email);
-    await sendVerificationEmail(user.email, token);
-    return {
-      errors: null,
-      status: "success",
-      formError: "Confirmation email sent",
-    };
+    return await userRegistration({ email, name, password });
   } catch (error) {
+    if (error instanceof Error) {
+      switch (error.name) {
+        case "EmailVerificationSendError":
+          return {
+            errors: null,
+            status: "error",
+            formMessage: MESSAGES.EMAIL_VERIFICATION_SEND_ERROR,
+          };
+        default:
+          return {
+            errors: null,
+            status: "error",
+            formMessage: MESSAGES.SERVER_ERROR,
+          };
+      }
+    }
     return {
       errors: null,
       status: "error",
-      formError: "Something went wrong. Please try again.",
+      formMessage: MESSAGES.SERVER_ERROR,
     };
   }
 };
@@ -178,19 +176,19 @@ export const verifyEmailAction = async (
     const existingUser = await findUser({ email: existingToken?.email });
 
     if (!existingToken?.token) {
-      return { success: false, message: "Invalid token" };
+      return { success: false, message: MESSAGES.INVALID_TOKEN };
     }
     if (!isEqual(existingToken?.token, token)) {
-      return { success: false, message: "Invalid token" };
+      return { success: false, message: MESSAGES.INVALID_TOKEN };
     }
     if (new Date(existingToken?.expiry) < new Date()) {
       return {
         success: false,
-        message: "Token has expired. Please request a new one",
+        message: MESSAGES.TOKEN_EXPIRED,
       };
     }
     if (!existingUser) {
-      return { success: false, message: "Invalid email" };
+      return { success: false, message: MESSAGES.INVALID_EMAIL };
     }
     await updateUser(
       { email: existingUser.email },
@@ -198,11 +196,11 @@ export const verifyEmailAction = async (
       { upsert: true }
     );
     await deleteToken({ token: existingToken.token });
-    return { success: true, message: "email verified" };
+    return { success: true, message: MESSAGES.EMAIL_VERIFIED };
   } catch (error) {
     return {
       success: false,
-      message: "Something went wrong. Please try again",
+      message: MESSAGES.SERVER_ERROR,
     };
   }
 };
@@ -225,7 +223,7 @@ export const sendPasswordResetEmailAction = async (
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       status: "error",
-      formError: null,
+      formMessage: null,
     };
   }
   const { email } = validatedFields.data;
@@ -235,21 +233,32 @@ export const sendPasswordResetEmailAction = async (
       return {
         errors: null,
         status: "error",
-        formError: "Invalid Email",
+        formMessage: MESSAGES.INVALID_EMAIL,
       };
     }
     const token = await generatePasswordResetToken(existingUser.email);
-    await sendPasswordResetToken(existingUser.email, token);
+    await sendPasswordResetToken(
+      existingUser.name,
+      existingUser.email,
+      token ?? ""
+    );
     return {
       errors: null,
       status: "success",
-      formError: "Password reset email sent",
+      formMessage: MESSAGES.PASSWORD_RESET_EMAIL_SENT,
     };
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.name === "ResetPasswordTokenError") {
+      return {
+        errors: null,
+        status: "error",
+        formMessage: MESSAGES.PASSWORD_RESET_ERROR,
+      };
+    }
     return {
       errors: null,
       status: "error",
-      formError: "Something went wrong. Please try again.",
+      formMessage: MESSAGES.SERVER_ERROR,
     };
   }
 };
@@ -274,7 +283,7 @@ export const resetPasswordAction = async (
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       status: "error",
-      formError: null,
+      formMessage: null,
     };
   }
   const { password } = validatedFields.data;
@@ -291,7 +300,7 @@ export const resetPasswordAction = async (
       return {
         errors: null,
         status: "error",
-        formError: "Invalid Token",
+        formMessage: MESSAGES.INVALID_TOKEN,
       };
     }
 
@@ -299,7 +308,7 @@ export const resetPasswordAction = async (
       return {
         errors: null,
         status: "error",
-        formError: "Invalid Token",
+        formMessage: MESSAGES.INVALID_TOKEN,
       };
     }
 
@@ -307,7 +316,7 @@ export const resetPasswordAction = async (
       return {
         errors: null,
         status: "error",
-        formError: "Token has expired. Please request a new one",
+        formMessage: MESSAGES.TOKEN_EXPIRED,
       };
     }
 
@@ -324,13 +333,13 @@ export const resetPasswordAction = async (
     return {
       errors: null,
       status: "success",
-      formError: "Password Reset Successful. Please login",
+      formMessage: MESSAGES.PASSWORD_RESET_SUCCESS,
     };
   } catch (error) {
     return {
       errors: null,
       status: "error",
-      formError: "Something went wrong. Please try again.",
+      formMessage: MESSAGES.SERVER_ERROR,
     };
   }
 };

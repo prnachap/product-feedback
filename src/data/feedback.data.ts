@@ -1,4 +1,4 @@
-import { ERROR_MESSAGES } from "@/constants/errorMessages";
+import { MESSAGES } from "@/constants/messages";
 import clientPromise from "@/lib/mongodb";
 import { mongooseConnect } from "@/lib/mongoose";
 import FeedbackModel from "@/models/feedback.model";
@@ -17,7 +17,16 @@ import {
  * @param sortBy - The sorting criteria.
  * @returns The sorting order object.
  */
-function getSortingOrder(sortBy: string) {
+function getSortingOrder(sortBy: string):
+  | {
+      totalVotes: number;
+      totalComments?: undefined;
+    }
+  | {
+      totalComments: number;
+      totalVotes?: undefined;
+    }
+  | undefined {
   switch (sortBy) {
     case "most upvotes":
       return { totalVotes: -1 };
@@ -37,7 +46,15 @@ function getSortingOrder(sortBy: string) {
  * @param category - The category to filter by.
  * @returns The filter fields object.
  */
-function getFilterFields(category: string) {
+function getFilterFields(category: string):
+  | {
+      category?: undefined;
+    }
+  | {
+      category: {
+        $regex: RegExp;
+      };
+    } {
   if (isEqual(category, "all")) return {};
   return {
     category: {
@@ -91,7 +108,7 @@ export async function getFeedbackSummary({
       ])
       .toArray();
   } catch (error) {
-    throw new Error(ERROR_MESSAGES.SERVER_ERROR);
+    throw new Error(MESSAGES.SERVER_ERROR);
   }
 }
 
@@ -130,7 +147,7 @@ export async function getFeedbackById({
       ])
       .next();
   } catch (error) {
-    throw new Error(ERROR_MESSAGES.SERVER_ERROR);
+    throw new Error(MESSAGES.SERVER_ERROR);
   }
 }
 
@@ -156,7 +173,7 @@ export async function getCommentsByFeedbackId({
       .select({ _id: 0, user: 0, comments: 1 })) as { comments: CommentType[] };
     return feedbackDetails;
   } catch (error) {
-    throw new Error(ERROR_MESSAGES.SERVER_ERROR);
+    throw new Error(MESSAGES.SERVER_ERROR);
   }
 }
 
@@ -176,7 +193,7 @@ export const getRoadMapStatistics = async (): Promise<RoadMapStatsType[]> => {
       ])
       .toArray();
   } catch (error) {
-    throw new Error(ERROR_MESSAGES.SERVER_ERROR);
+    throw new Error(MESSAGES.SERVER_ERROR);
   }
 };
 
@@ -211,6 +228,6 @@ export const getFeedbackByStatus = async (
       .toArray();
     return result;
   } catch (error) {
-    throw new Error(ERROR_MESSAGES.SERVER_ERROR);
+    throw new Error(MESSAGES.SERVER_ERROR);
   }
 };

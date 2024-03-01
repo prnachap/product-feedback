@@ -1,3 +1,4 @@
+import { APP_ROUTES } from "@/constants";
 import clientPromise from "@/lib/mongodb";
 import { IUserModel } from "@/models/user.model";
 import { findUser, updateUser } from "@/services/user.service";
@@ -5,7 +6,6 @@ import { Adapter } from "@auth/core/adapters";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import NextAuth from "next-auth";
 import authConfig from "./auth.config";
-import { AUTH_ROUTES } from "@/constants";
 
 export const {
   handlers: { GET, POST },
@@ -14,9 +14,9 @@ export const {
   signOut,
 } = NextAuth({
   pages: {
-    signIn: AUTH_ROUTES.LOGIN,
-    signOut: AUTH_ROUTES.LOGOUT,
-    error: AUTH_ROUTES.AUTH_ERROR,
+    signIn: APP_ROUTES.LOGIN,
+    signOut: APP_ROUTES.LOGOUT,
+    error: APP_ROUTES.AUTH_ERROR,
   },
 
   events: {

@@ -5,6 +5,12 @@ import crypto from "crypto";
 import { ObjectId } from "mongodb";
 import { v4 as uuidv4 } from "uuid";
 
+/**
+ * Generates a verification token for the given email.
+ * @param email - The email for which the verification token is generated.
+ * @returns A promise that resolves to the generated verification token, or undefined if an error occurs.
+ * @throws {"EmailVerificationTokenError"} If an error occurs while generating the verification token.
+ */
 export const generateVerificationToken = async (
   email: string
 ): Promise<string | undefined> => {
@@ -25,6 +31,12 @@ export const generateVerificationToken = async (
   }
 };
 
+/**
+ * Generates a password reset token for the given email.
+ * @param email - The email address of the user.
+ * @returns A promise that resolves to the generated password reset token, or null/undefined if an error occurs.
+ * @throws {"ResetPasswordTokenError"} If an error occurs while generating the token.
+ */
 export const generatePasswordResetToken = async (
   email: string
 ): Promise<string | null | undefined> => {
@@ -37,11 +49,20 @@ export const generatePasswordResetToken = async (
       { new: true }
     );
     return passwordResetDocument?.passwordResetToken;
-  } catch (error) {
-    throw new Error("Error generating token");
+  } catch (error: any) {
+    const updatedError = new Error(error?.message);
+    updatedError.name = "ResetPasswordTokenError";
+    throw updatedError;
   }
 };
 
+/**
+ * Generates a two-factor authentication token for a user.
+ * @param email - The email of the user.
+ * @param userId - The ID of the user.
+ * @returns A promise that resolves to the generated token.
+ * @throws {"TwoFactorTokenError"} If an error occurs while generating the token.
+ */
 export const generateTwoFactorToken = async (
   email: string,
   userId: ObjectId

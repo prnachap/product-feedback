@@ -2,7 +2,9 @@ import UserModel, { IUser, IUserModel } from "@/models/user.model";
 import { FilterQuery, QueryOptions, UpdateQuery } from "mongoose";
 import { mongooseConnect } from "../lib/mongoose";
 
-export const createUser = async (input: Partial<IUser>) => {
+export const createUser = async (
+  input: Partial<IUser>
+): Promise<IUserModel> => {
   return await UserModel.create<IUserModel>(input);
 };
 

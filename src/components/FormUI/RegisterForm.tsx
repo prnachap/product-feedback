@@ -21,14 +21,14 @@ const RegisterForm = () => {
   const [formState, dispatch] = useFormState(registerAction, {
     errors: null,
     status: null,
-    formError: null,
+    formMessage: null,
   });
 
   const nameError = formState?.errors?.name;
   const userNameError = formState?.errors?.username;
   const emailError = formState?.errors?.email;
   const passwordError = formState?.errors?.password;
-  const formError = formState?.formError;
+  const formError = formState?.formMessage;
 
   const hasNameError = Boolean(nameError?.length);
   const hasUserNameError = Boolean(userNameError?.length);
@@ -109,7 +109,7 @@ const RegisterForm = () => {
           <ErrorList id="password-error" errors={passwordError} />
         </div>
         {hasFormError && (
-          <AlertCard severity={alertSeverity} message={formState.formError} />
+          <AlertCard severity={alertSeverity} message={formState.formMessage} />
         )}
         <FormSubmissionButton title="Register" form="register-form" />
       </form>

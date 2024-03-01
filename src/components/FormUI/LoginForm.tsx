@@ -1,7 +1,7 @@
 "use client";
 
 import { loginAction } from "@/actions/auth.action";
-import { AUTH_ROUTES } from "@/constants";
+import { APP_ROUTES } from "@/constants";
 import useFocusOnFormError from "@/hooks/useFocusOnFormError";
 import clsx from "clsx";
 import Link from "next/link";
@@ -20,12 +20,12 @@ const LoginForm = () => {
   const [formState, dispatch] = useFormState(loginAction, {
     errors: null,
     status: null,
-    formError: null,
+    formMessage: null,
   });
 
   const emailError = formState?.errors?.email;
   const passwordError = formState?.errors?.password;
-  const formError = formState?.formError;
+  const formError = formState?.formMessage;
   const hasEmailError = Boolean(emailError?.length);
   const hasPasswordError = Boolean(passwordError?.length);
   const hasFormError = Boolean(formError);
@@ -74,7 +74,7 @@ const LoginForm = () => {
         </div>
         <div>
           <Link
-            href={AUTH_ROUTES.RESET_PASSWORD}
+            href={APP_ROUTES.RESET_PASSWORD}
             className="btn-back-primary !px-0"
             prefetch={true}
           >
@@ -82,7 +82,7 @@ const LoginForm = () => {
           </Link>
         </div>
         {hasFormError && (
-          <AlertCard severity={alertSeverity} message={formState.formError} />
+          <AlertCard severity={alertSeverity} message={formState.formMessage} />
         )}
         <FormSubmissionButton title="Login" form="login-form" />
       </form>
@@ -91,7 +91,7 @@ const LoginForm = () => {
       <div className="flex justify-center">
         <p className="body-two-text">Don&apos;t have an account? </p>
         <Link
-          href={AUTH_ROUTES.REGISTER}
+          href={APP_ROUTES.REGISTER}
           className="bg-transparent hover:underline text-dark-blue-gray font-bold border-none transition-all ease-in ml-1"
         >
           Register

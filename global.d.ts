@@ -42,7 +42,7 @@ type ResetPasswordFields = z.infer<typeof ResetPasswordSchema>;
 type FormState<T extends Record<string, any>> = {
   errors: Partial<Record<keyof T, string[]>> | null;
   status: "error" | "success" | null;
-  formError: string | null;
+  formMessage: string | null;
   isTwoFactorEnabled?: boolean;
 };
 type LoginFormState = FormState<LoginFields>;
