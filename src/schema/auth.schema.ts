@@ -5,6 +5,9 @@ export const LoginFormSchema = z.object({
   password: z
     .string({ required_error: "password is required" })
     .min(1, "password is required"),
+  twoFactorCode: z
+    .string({ required_error: "Two factor code is required" })
+    .optional(),
 });
 
 export const RegisterFormSchema = z.object({

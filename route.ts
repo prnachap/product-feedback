@@ -1,4 +1,4 @@
-import { API_AUTH_PREFIX, AUTH_ROUTES, ROUTES } from "@/constants";
+import { API_AUTH_PREFIX, APP_ROUTES } from "@/constants";
 
 /**
  * @description routes that are public and do not require authentication
@@ -7,9 +7,9 @@ import { API_AUTH_PREFIX, AUTH_ROUTES, ROUTES } from "@/constants";
  */
 export const publicRoutes = [
   "/",
-  AUTH_ROUTES.NEW_PASSWORD,
-  AUTH_ROUTES.NEW_VERIFICATION,
-  AUTH_ROUTES.RESET_PASSWORD,
+  APP_ROUTES.NEW_PASSWORD,
+  APP_ROUTES.NEW_VERIFICATION,
+  APP_ROUTES.RESET_PASSWORD,
 ];
 
 /**
@@ -17,9 +17,9 @@ export const publicRoutes = [
  * @type {string[]}
  */
 export const authRoutes = [
-  AUTH_ROUTES.LOGIN,
-  AUTH_ROUTES.REGISTER,
-  AUTH_ROUTES.AUTH_ERROR,
+  APP_ROUTES.LOGIN,
+  APP_ROUTES.REGISTER,
+  APP_ROUTES.AUTH_ERROR,
 ];
 
 /**
@@ -33,10 +33,10 @@ export const apiAuthPrefix = API_AUTH_PREFIX;
  * @description the default route to redirect to after login
  * @type {string}
  */
-export const DEFAULT_LOGIN_REDIRECT = ROUTES.HOME;
+export const DEFAULT_LOGIN_REDIRECT = APP_ROUTES.HOME_PAGE;
 
 /**
  * @description the default route to redirect to after logout
  * @type {string}
  */
-export const DEFAULT_LOGOUT_REDIRECT = AUTH_ROUTES.LOGIN;
+export const DEFAULT_LOGOUT_REDIRECT = APP_ROUTES.LOGIN;

@@ -1,5 +1,12 @@
 export const APP_ROUTES = {
-  LOGIN_PAGE: "/auth/login",
+  LOGIN: "/auth/login",
+  REGISTER: "/auth/register",
+  NEW_VERIFICATION: "/auth/new-verification",
+  NEW_PASSWORD: "/auth/new-password",
+  TWO_FACTOR: "/auth/two-factor",
+  RESET_PASSWORD: "/auth/reset-password",
+  AUTH_ERROR: "/auth/error",
+  LOGOUT: "/auth/logout",
   HOME_PAGE: "/feedback",
   CREATE_FEEDBACK: "/feedback/create",
   FEEDBACK_DETAIL: "/feedback/[feedbackId]",

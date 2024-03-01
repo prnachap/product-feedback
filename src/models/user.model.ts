@@ -5,13 +5,15 @@ export interface IUser {
   username?: string;
   email: string;
   password?: string;
-  emailVerified?: boolean;
+  emailVerified?: Date;
   image?: string;
   userRole: "user" | "admin";
-  posts?: string[];
-  accounts?: string[];
-  passwordResetToken: string | null;
-  passwordResetTokenExpires: Date | null;
+  posts?: mongoose.Types.ObjectId[];
+  accounts?: mongoose.Types.ObjectId;
+  passwordResetToken?: string | null;
+  passwordResetTokenExpires?: Date | null;
+  isTwoFactorEnabled?: boolean;
+  twoFactorId?: mongoose.Types.ObjectId;
 }
 
 export interface IUserModel extends Document, IUser {
@@ -36,7 +38,7 @@ const UserSchema = new mongoose.Schema<IUserModel>(
       type: String,
     },
     emailVerified: {
-      type: Date || Boolean,
+      type: Date,
     },
     image: {
       type: String,
@@ -48,16 +50,22 @@ const UserSchema = new mongoose.Schema<IUserModel>(
     },
     passwordResetToken: {
       type: String,
-      required: true,
       default: null,
     },
     passwordResetTokenExpires: {
       type: Date,
-      required: true,
       default: null,
     },
+    isTwoFactorEnabled: {
+      type: Boolean,
+      default: false,
+    },
     posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Feedback" }],
-    accounts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Account" }],
+    accounts: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
+    twoFactorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "TwoFactorConfirmation",
+    },
   },
   { timestamps: true }
 );

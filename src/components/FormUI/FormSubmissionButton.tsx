@@ -6,9 +6,11 @@ import StyledButton from "../Button/StyledButton";
 const FormSubmissionButton = ({
   title,
   form,
+  isLoading,
 }: {
   title: string;
   form?: string;
+  isLoading?: boolean;
 }) => {
   const { pending } = useFormStatus();
 
@@ -21,7 +23,7 @@ const FormSubmissionButton = ({
       type="submit"
       disabled={pending}
     >
-      {pending ? <AnimatedLoader className="bg-white" /> : title}
+      {pending || isLoading ? <AnimatedLoader className="bg-white" /> : title}
     </StyledButton>
   );
 };

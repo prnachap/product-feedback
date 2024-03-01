@@ -23,6 +23,7 @@ const CommentBox: React.FC = () => {
   } = useForm<CommentFormInput>({
     resolver: zodResolver(CommentFormSchema),
   });
+
   const comment = watch("comment");
   const params = useParams();
   const [formSubmissionStatus, setFormSubmissionStatus] = useState<{

@@ -6,10 +6,10 @@ import Comments from "./Comments";
 type CommentsListProps = { feedbackId: string };
 
 const CommentsList = async ({ feedbackId }: CommentsListProps) => {
-  const { comments } = await getCommentsByFeedbackId({ id: feedbackId });
+  const feedback = await getCommentsByFeedbackId({ id: feedbackId });
 
   const renderCommentList = () => {
-    return comments?.map((item) => {
+    return feedback?.comments?.map((item) => {
       item._id = item._id.toString();
       item.user._id = item.user._id.toString();
       return (
@@ -24,7 +24,7 @@ const CommentsList = async ({ feedbackId }: CommentsListProps) => {
   };
 
   const renderCustomCard = () => {
-    return isEmpty(comments) ? null : (
+    return isEmpty(feedback?.comments) ? null : (
       <CustomCard className="flex flex-col gap-6 md:gap-8">
         {renderCommentList()}
       </CustomCard>

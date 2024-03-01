@@ -9,7 +9,7 @@ export const createUser = async (input: Partial<IUser>) => {
 export const findUser = async (
   query: FilterQuery<IUser>,
   options?: QueryOptions<IUser>
-) => {
+): Promise<IUserModel | null> => {
   await mongooseConnect();
   return await UserModel.findOne<IUserModel>(query, {}, options ?? {});
 };
@@ -18,9 +18,9 @@ export const updateUser = async (
   filteQuery: FilterQuery<IUser>,
   updateQuery: UpdateQuery<IUser>,
   queryOptions?: QueryOptions<IUser>
-) => {
+): Promise<IUserModel | null> => {
   await mongooseConnect();
-  return await UserModel.findOneAndUpdate(
+  return await UserModel.findOneAndUpdate<IUserModel>(
     filteQuery,
     updateQuery,
     queryOptions ?? {}
