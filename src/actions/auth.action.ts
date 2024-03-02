@@ -102,6 +102,28 @@ export const loginAction = async (
           };
       }
     }
+    if (error instanceof Error) {
+      switch (error.name) {
+        case "EmailVerificationTokenError":
+          return {
+            errors: null,
+            status: "error",
+            formMessage: MESSAGES.EMAIL_VERIFICATION_ERROR,
+          };
+        case "TwoFactorTokenError":
+          return {
+            errors: null,
+            status: "error",
+            formMessage: MESSAGES.TWO_FACTOR_ERROR,
+          };
+        default:
+          return {
+            errors: null,
+            status: "error",
+            formMessage: MESSAGES.SERVER_ERROR,
+          };
+      }
+    }
     throw error;
   }
 };
@@ -135,10 +157,11 @@ export const registerAction = async (
     if (error instanceof Error) {
       switch (error.name) {
         case "EmailVerificationSendError":
+        case "EmailVerificationTokenError":
           return {
             errors: null,
             status: "error",
-            formMessage: MESSAGES.EMAIL_VERIFICATION_SEND_ERROR,
+            formMessage: MESSAGES.REGISTER_VERIFICATION_ERROR,
           };
         default:
           return {

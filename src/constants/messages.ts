@@ -23,4 +23,6 @@ export const MESSAGES = {
   USER_NOT_FOUND: "User not found",
   USER_EXISTS: "User already exists",
   PASSWORD_RESET_SUCCESS: "Password reset successful, please login",
+  REGISTER_VERIFICATION_ERROR:
+    "User Registered Successfully, but failed to send verification email, please login to verify email",
 };
