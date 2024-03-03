@@ -15,7 +15,8 @@ const FeedbackDetailsContainer = async ({
 }: {
   feedbackId: string;
 }) => {
-  const data = await getFeedbackById({ id: feedbackId });
+  const result = await getFeedbackById({ id: feedbackId });
+  const data = result?.[0];
 
   if (!data) {
     notFound();

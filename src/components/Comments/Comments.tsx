@@ -120,9 +120,7 @@ const Comments: React.FC<CommentsProps> = (props) => {
           <h4 className="quaternary-text  text-american-blue-100">
             {user?.name ?? ""}
           </h4>
-          <p className="body-text md:!text-[14px]">
-            {`@${user?.username ?? ""}`}
-          </p>
+          <p className="body-text md:!text-[14px]">{`@${user?.name ?? ""}`}</p>
         </div>
         {renderReplyButton()}
         <div className="md:col-start-2 col-span-full">{renderContent()}</div>

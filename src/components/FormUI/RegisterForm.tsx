@@ -25,13 +25,11 @@ const RegisterForm = () => {
   });
 
   const nameError = formState?.errors?.name;
-  const userNameError = formState?.errors?.username;
   const emailError = formState?.errors?.email;
   const passwordError = formState?.errors?.password;
   const formError = formState?.formMessage;
 
   const hasNameError = Boolean(nameError?.length);
-  const hasUserNameError = Boolean(userNameError?.length);
   const hasEmailError = Boolean(emailError?.length);
   const hasPasswordError = Boolean(passwordError?.length);
   const hasFormError = Boolean(formError);
@@ -62,21 +60,6 @@ const RegisterForm = () => {
             className={hasNameError ? `!border-jasper` : ""}
           />
           <ErrorList id="name-error" errors={nameError} />
-        </div>
-        <div>
-          <label htmlFor="username" className={clsx(`input-label !mb-2`)}>
-            Username
-          </label>
-          <Input
-            type="text"
-            id="username"
-            name="username"
-            placeholder="e.g johndoe"
-            aria-describedby="username-error"
-            aria-invalid={hasUserNameError || undefined}
-            className={hasUserNameError ? `!border-jasper` : ""}
-          />
-          <ErrorList id="username-error" errors={userNameError} />
         </div>
         <div>
           <label htmlFor="email" className={clsx(`input-label !mb-2`)}>

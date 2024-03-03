@@ -17,16 +17,7 @@ import {
  * @param sortBy - The sorting criteria.
  * @returns The sorting order object.
  */
-function getSortingOrder(sortBy: string):
-  | {
-      totalVotes: number;
-      totalComments?: undefined;
-    }
-  | {
-      totalComments: number;
-      totalVotes?: undefined;
-    }
-  | undefined {
+function getSortingOrder(sortBy: string): Record<string, 1 | -1> {
   switch (sortBy) {
     case "most upvotes":
       return { totalVotes: -1 };
@@ -35,6 +26,8 @@ function getSortingOrder(sortBy: string):
     case "most comments":
       return { totalComments: -1 };
     case "least comments":
+      return { totalComments: 1 };
+    default:
       return { totalComments: 1 };
   }
 }
@@ -83,30 +76,25 @@ export async function getFeedbackSummary({
   const filter = getFilterFields(category);
 
   try {
-    const client = await clientPromise;
-    const collection = client.db("product-feedback").collection("feedbacks");
-    return await collection
-      .aggregate<FeedbackSummary>([
-        { $match: { ...filter } },
-        {
-          $addFields: {
-            totalComments: { $size: "$comments" },
-            totalVotes: { $size: "$upvotes" },
-          },
+    await mongooseConnect();
+    return await FeedbackModel.aggregate<FeedbackSummary>([
+      { $match: { ...filter } },
+      {
+        $addFields: {
+          totalComments: { $size: "$comments" },
+          totalVotes: { $size: "$upvotes" },
         },
-        {
-          $project: {
-            comments: 0,
-            upvotes: 0,
-          },
+      },
+      {
+        $project: {
+          comments: 0,
+          upvotes: 0,
         },
-        {
-          $sort: {
-            ...sortingOrder,
-          },
-        },
-      ])
-      .toArray();
+      },
+      {
+        $sort: sortingOrder,
+      },
+    ]);
   } catch (error) {
     throw new Error(MESSAGES.SERVER_ERROR);
   }
@@ -123,29 +111,26 @@ export async function getFeedbackById({
   id,
 }: {
   id: string;
-}): Promise<FeedbackSummary | null> {
+}): Promise<FeedbackSummary[] | null> {
   noStore();
 
   try {
-    const client = await clientPromise;
-    const collection = client.db("product-feedback").collection("feedbacks");
-    return await collection
-      .aggregate<FeedbackSummary>([
-        { $match: { _id: new ObjectId(id) } },
-        {
-          $addFields: {
-            totalComments: { $size: "$comments" },
-            totalVotes: { $size: "$upvotes" },
-          },
+    await mongooseConnect();
+    return await FeedbackModel.aggregate<FeedbackSummary>([
+      { $match: { _id: new ObjectId(id) } },
+      {
+        $addFields: {
+          totalComments: { $size: "$comments" },
+          totalVotes: { $size: "$upvotes" },
         },
-        {
-          $project: {
-            comments: 0,
-            upvotes: 0,
-          },
+      },
+      {
+        $project: {
+          comments: 0,
+          upvotes: 0,
         },
-      ])
-      .next();
+      },
+    ]);
   } catch (error) {
     throw new Error(MESSAGES.SERVER_ERROR);
   }

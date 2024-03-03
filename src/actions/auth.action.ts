@@ -86,23 +86,23 @@ export const loginAction = async (
       formMessage: null,
     };
   } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return {
-            errors: null,
-            status: "error",
-            formMessage: MESSAGES.INVALID_CREDENTIALS,
-          };
-        default:
-          return {
-            errors: null,
-            status: "error",
-            formMessage: MESSAGES.SERVER_ERROR,
-          };
-      }
-    }
     if (error instanceof Error) {
+      if (error instanceof AuthError) {
+        switch (error.type) {
+          case "CredentialsSignin":
+            return {
+              errors: null,
+              status: "error",
+              formMessage: MESSAGES.INVALID_CREDENTIALS,
+            };
+          default:
+            return {
+              errors: null,
+              status: "error",
+              formMessage: MESSAGES.SERVER_ERROR,
+            };
+        }
+      }
       switch (error.name) {
         case "EmailVerificationTokenError":
           return {
@@ -115,12 +115,6 @@ export const loginAction = async (
             errors: null,
             status: "error",
             formMessage: MESSAGES.TWO_FACTOR_ERROR,
-          };
-        default:
-          return {
-            errors: null,
-            status: "error",
-            formMessage: MESSAGES.SERVER_ERROR,
           };
       }
     }

@@ -9,17 +9,27 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
+    # strategy:
+    #   matrix:
+    #     node-version: [18.x, 20.x]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Set up Node.js ${{matrix.node-version}}
-        uses: actions/setup-node@v2
+      - name: Build Docker image
+        uses: docker/build-push-action@v5.1.0
         with:
-          node-version: ${{matrix.node-version}}
-      - name: Install dependencies
-        run: npm install
-      - name: Run tests
-        run: npm test
+          context: .
+          file: ./dockerFile.dev
+          push: false
+          tags: product-feedback:latest
+      - name: Run tests in Docker container
+        run: docker run --rm product-feedback:latest npm test
+
+      # - name: Set up Node.js ${{matrix.node-version}}
+      #   uses: actions/setup-node@v2
+      #   with:
+      #     node-version: ${{matrix.node-version}}
+      # - name: Install dependencies
+      #   run: npm install
+      # - name: Run tests
+      #   run: npm test

@@ -13,6 +13,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { FeedbackType } from "../..";
+import { auth } from "../../auth";
 
 type FormState<T extends Record<string, any>> = {
   errors: Partial<Record<keyof T, string[]>> | null;
@@ -40,12 +41,14 @@ export async function addComments({
 }): Promise<{ success: boolean; error: string | null }> {
   try {
     await mongooseConnect();
+    const session = await auth();
+    const userId = session?.user.id;
     const feedback = await FeedbackModel.findOne<IFeedbackModel>({
       _id: feedbackId,
     });
 
     const user = await UserModel.findOne<IUserModel>({
-      _id: "624271eda7e9284035913aa6",
+      _id: userId,
     });
 
     if (isEmpty(feedback)) {
@@ -86,12 +89,16 @@ export const postRepliesToComment = async ({
   content: string;
 }): Promise<{ success: boolean; error: string | null }> => {
   try {
+    await mongooseConnect();
+    const session = await auth();
+    const userId = session?.user.id;
+
     const feedback = await FeedbackModel.findById<FeedbackType>(
       { _id: feedbackId },
       { lean: false }
     );
     const user = await UserModel.findOne<IUserModel>({
-      _id: "624271eda7e9284035913aa6",
+      _id: userId,
     });
 
     const comment = await CommentModel.findById<ICommentModel>({
@@ -127,11 +134,14 @@ export const addLikes = async (
   feedbackId: string
 ): Promise<{ success: boolean; error: string | null }> => {
   try {
+    await mongooseConnect();
+    const session = await auth();
+    const userId = session?.user.id;
     const feedback = await FeedbackModel.findOne<IFeedbackModel>({
       _id: feedbackId,
     }).select("upvotes");
     const user = await UserModel.findOne<IUserModel>({
-      _id: "624271eda7e9284035913aa6",
+      _id: userId,
     });
 
     if (!feedback) {
@@ -143,7 +153,7 @@ export const addLikes = async (
     }
 
     const userIndex = feedback?.upvotes.findIndex((user) => {
-      return isEqual(user.toString(), "624271eda7e9284035913aa6");
+      return isEqual(user.toString(), userId);
     });
 
     if (gte(userIndex, 0)) {
@@ -177,6 +187,8 @@ export const createFeedback = async (
 ): Promise<CreateFeedbackFormState> => {
   const title = formData.get("title");
   const description = formData.get("description");
+  const session = await auth();
+  const userId = session?.user.id;
 
   const validatedFields = CreateFeedbackSchema.safeParse({
     title,
@@ -195,7 +207,7 @@ export const createFeedback = async (
 
   try {
     const user = await UserModel.findOne<IUserModel>({
-      _id: "624271eda7e9284035913aa6",
+      _id: userId,
     });
     await FeedbackModel.create<IFeedbackModel>({
       ...validatedFields.data,
@@ -248,8 +260,11 @@ export const editFeedback = async (
   }
 
   try {
+    await mongooseConnect();
+    const session = await auth();
+    const userId = session?.user.id;
     const user = await UserModel.findOne<IUserModel>({
-      _id: "624271eda7e9284035913aa6",
+      _id: userId,
     });
     await FeedbackModel.updateOne<IFeedbackModel>(
       { _id: feedbackId },

@@ -49,9 +49,7 @@ export const {
       return token;
     },
   },
-  adapter: MongoDBAdapter(clientPromise, {
-    databaseName: "product-feedback",
-  }) as Adapter,
+  adapter: MongoDBAdapter(clientPromise) as Adapter,
   session: { strategy: "jwt" },
   ...authConfig,
 });
