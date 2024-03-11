@@ -1,3 +1,4 @@
+import { APP_ROUTES } from "@/constants";
 import { getFeedbackById } from "@/data/feedback.data";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -33,7 +34,7 @@ const FeedbackDetailsContainer = async ({
   return (
     <LayoutContainer className="!w-[95%] mt-6">
       <div className="flex justify-between items-center z-20 mb-6 sticky top-0 md:top-10 lg:top-14">
-        <BackButton />
+        <BackButton href={APP_ROUTES.HOME_PAGE} />
         {renderEditButton()}
       </div>
       <div className="relative z-10 h-[80vh] overflow-auto">

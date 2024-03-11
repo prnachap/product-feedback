@@ -1,7 +1,7 @@
 "use client";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Popover from "@mui/material/Popover";
 import React, { Fragment } from "react";
+import AccountIcon from "../../../public/assets/shared/account.svg";
 
 const SettingsPopover = ({ children }: { children: React.ReactNode }) => {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
@@ -18,7 +18,7 @@ const SettingsPopover = ({ children }: { children: React.ReactNode }) => {
   return (
     <Fragment>
       <button onClick={handleClick}>
-        <AccountCircleIcon color="action" />
+        <AccountIcon className="h-7 w-7" />
       </button>
       <Popover
         id={id}

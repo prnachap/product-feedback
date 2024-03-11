@@ -5,9 +5,10 @@ import { CommentFormSchema } from "@/schema/feedback.schema";
 import { getRemainingWordCount } from "@/utils/formElementUtils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { z } from "zod";
+import AnimatedLoader from "../AnimatedLoader/AnimatedLoader";
 import StyledButton from "../Button/StyledButton";
 import CustomCard from "../UI/CustomCard";
 
@@ -23,6 +24,7 @@ const CommentBox: React.FC = () => {
   } = useForm<CommentFormInput>({
     resolver: zodResolver(CommentFormSchema),
   });
+  const [isPending, setTransition] = useTransition();
 
   const comment = watch("comment");
   const params = useParams();
@@ -38,12 +40,26 @@ const CommentBox: React.FC = () => {
       success: false,
     });
 
-    const status = await addComments({
-      comments: data.comment,
-      feedbackId: params.feedbackid as string,
+    setTransition(async () => {
+      addComments({
+        comments: data.comment,
+        feedbackId: params.feedbackid as string,
+      })
+        .then((response) => {
+          if (response.success) {
+            reset();
+            setFormSubmissionStatus({ ...formSubmissionStatus, ...response });
+          } else {
+            setFormSubmissionStatus({ ...formSubmissionStatus, ...response });
+          }
+        })
+        .catch((error) => {
+          setFormSubmissionStatus({
+            ...formSubmissionStatus,
+            error: error.message,
+          });
+        });
     });
-    reset();
-    setFormSubmissionStatus({ ...formSubmissionStatus, ...status });
   };
 
   return (
@@ -85,11 +101,18 @@ const CommentBox: React.FC = () => {
             {getRemainingWordCount(comment)} characters left
           </p>
           <StyledButton
-            disabled={isSubmitting}
+            disabled={isPending}
             className="btn-primary disabled:bg-cool-grey"
             type="submit"
           >
-            {isSubmitting ? "Saving..." : "Post Comment"}
+            {isPending ? (
+              <div className="flex gap-2">
+                <AnimatedLoader className="bg-white" />
+                <span>saving</span>
+              </div>
+            ) : (
+              "Post Comment"
+            )}
           </StyledButton>
         </div>
       </form>

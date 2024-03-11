@@ -1,3 +1,4 @@
+import { getRoadMapStatistics } from "@/data/feedback.data";
 import { Suspense } from "react";
 import CreateFeedbackBar from "../CreateFeedbackBar.tsx/CreateFeedbackBar";
 import FeedbackList from "../FeedbackList/FeedbackList";
@@ -5,6 +6,7 @@ import FeedbackListSkeleton from "../FeedbackList/FeedbackListSkeleton";
 import FeedbackLogo from "../LogoCard/FeedbackLogo";
 import NavbarMobile from "../Navbar/NavbarMobile";
 import RoadmapCard from "../RoadmapCard/RoadmapCard";
+import RoadmapCardSkeleton from "../RoadmapCard/RoadmapCardSkeleton";
 import TagsCard from "../TagsCard/TagsCard";
 import LayoutContainer from "../UI/LayoutContainer";
 
@@ -15,12 +17,15 @@ const HomePageContainer = async ({
   category: string;
   sortBy: string;
 }) => {
+  const status = await getRoadMapStatistics();
   return (
     <LayoutContainer className="flex flex-col sticky z-40 md:gap-8 lg:flex-row">
       <div className="hidden z-40 sticky md:top-10 md:flex md:flex-row md:justify-between md:gap-3 lg:top-14 lg:max-h-[30rem] lg:flex-col lg:gap-5">
         <FeedbackLogo />
         <TagsCard />
-        <RoadmapCard />
+        <Suspense fallback={<RoadmapCardSkeleton />}>
+          <RoadmapCard status={status} />
+        </Suspense>
       </div>
       <div className="flex flex-col w-full sticky top-28 ">
         <NavbarMobile />

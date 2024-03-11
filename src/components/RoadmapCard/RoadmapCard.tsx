@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { APP_ROUTES, status } from "../../constants";
+import { RoadMapStatsType } from "../../..";
+import { APP_ROUTES } from "../../constants";
 import Status from "../Status/Status";
 import CustomCard from "../UI/CustomCard";
 
-const RoadmapCard = async () => {
+const RoadmapCard = async ({ status }: { status: RoadMapStatsType[] }) => {
   const renderStatus = () => {
-    return status.map((status) => (
-      <Status key={status} name={status} count={1} />
+    return status?.map((status) => (
+      <Status key={status._id} name={status._id} count={status.count} />
     ));
   };
 

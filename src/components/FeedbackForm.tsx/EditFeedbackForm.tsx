@@ -48,6 +48,7 @@ const EditFeedbackForm: React.FC<EditFeedbackFormProps> = ({
     formError: null,
   });
   const formRef = useRef<HTMLFormElement>(null);
+  console.log("state updates", state);
 
   const onCategoryChange = (option: string) => setFeedbackCategory(option);
   const onStatusChange = (status: any) => setFeedbackStatus(status);

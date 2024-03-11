@@ -1,16 +1,18 @@
 "use client";
 
 import { deleteFeedback } from "@/actions/feedback.action";
-import StyledButton from "../Button/StyledButton";
+import FormSubmissionButton from "./FormSubmissionButton";
 
 const DeleteForm = ({ feedbackId }: { feedbackId: string }) => {
   const deleteAction = deleteFeedback.bind(null, feedbackId);
 
   return (
     <form action={deleteAction} id="delete-feedback">
-      <StyledButton form="delete-feedback" className="btn-danger" type="submit">
-        Delete
-      </StyledButton>
+      <FormSubmissionButton
+        title="Delete"
+        form="delete-feedback"
+        className="btn-danger"
+      />
     </form>
   );
 };

@@ -25,4 +25,9 @@ export const MESSAGES = {
   PASSWORD_RESET_SUCCESS: "Password reset successful, please login",
   REGISTER_VERIFICATION_ERROR:
     "User Registered Successfully, but failed to send verification email, please login to verify email",
+  FEEDBACK_CREATION_FAILURE: "Failed to create feedback, Try again",
+  FEEDBACK_UPDATE_FAILURE: "Failed to update feedback, Try again",
+  FEEDBACK_DELETE_FAILURE: "Failed to delete feedback, Try again",
+  FEEDBACK_COMMENT_FAILURE: "Failed to add comment, Try again",
+  USER_NOT_AUTHORIZED: "You are not authorized to edit this feedback.",
 };

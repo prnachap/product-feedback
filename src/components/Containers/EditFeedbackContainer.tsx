@@ -10,14 +10,13 @@ const EditFeedbackContainer = async ({
   feedbackId: string;
 }) => {
   const feedbackData = await getFeedbackById({ id: feedbackId });
-
   if (!feedbackData) {
     notFound();
   }
   return (
     <LayoutContainer className="mt-8 w-[90%] md:w-full">
       <BackButton />
-      <EditFeedbackForm feedbackData={feedbackData} />
+      <EditFeedbackForm feedbackData={feedbackData?.[0]} />
     </LayoutContainer>
   );
 };

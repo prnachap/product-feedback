@@ -4,18 +4,18 @@ import { postRepliesToComment } from "@/actions/feedback.action";
 import { CommentFormSchema } from "@/schema/feedback.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import StyledButton from "../Button/StyledButton";
 type CommentFormInput = z.TypeOf<typeof CommentFormSchema>;
 
-type ReplyBoxProps = { commentId: string };
-const ReplyBox = ({ commentId }: ReplyBoxProps) => {
+type ReplyBoxProps = { commentId: string; handleReplyForm: () => void };
+const ReplyBox = ({ commentId, handleReplyForm }: ReplyBoxProps) => {
   const {
     register,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     handleSubmit,
   } = useForm<CommentFormInput>({
     resolver: zodResolver(CommentFormSchema),
@@ -25,6 +25,7 @@ const ReplyBox = ({ commentId }: ReplyBoxProps) => {
     error: string | null;
   }>({ success: false, error: null });
   const { feedbackid } = useParams<{ feedbackid: string }>();
+  const [isPending, setTransition] = useTransition();
 
   const onSubmit: SubmitHandler<CommentFormInput> = async (data) => {
     setFormSubmissionStatus({
@@ -32,16 +33,22 @@ const ReplyBox = ({ commentId }: ReplyBoxProps) => {
       error: null,
       success: false,
     });
-    const result = await postRepliesToComment({
-      feedbackId: feedbackid,
-      commentId,
-      content: data.comment,
+
+    setTransition(async () => {
+      const result = await postRepliesToComment({
+        feedbackId: feedbackid,
+        commentId,
+        content: data.comment,
+      });
+      if (result.success) {
+        reset();
+        handleReplyForm?.();
+      }
+      setFormSubmissionStatus({
+        ...formSubmissionStatus,
+        ...result,
+      });
     });
-    setFormSubmissionStatus({
-      ...formSubmissionStatus,
-      ...result,
-    });
-    reset();
   };
 
   return (
@@ -77,9 +84,9 @@ const ReplyBox = ({ commentId }: ReplyBoxProps) => {
         <StyledButton
           className="btn-primary disabled:bg-cool-grey"
           type="submit"
-          disabled={isSubmitting}
+          disabled={isPending}
         >
-          {isSubmitting ? "Saving..." : "Post Reply"}
+          {isPending ? "Saving..." : "Post Reply"}
         </StyledButton>
       </div>
     </form>

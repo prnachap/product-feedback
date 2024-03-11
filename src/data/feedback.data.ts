@@ -1,5 +1,5 @@
+import { status } from "@/constants";
 import { MESSAGES } from "@/constants/messages";
-import clientPromise from "@/lib/mongodb";
 import { mongooseConnect } from "@/lib/mongoose";
 import FeedbackModel from "@/models/feedback.model";
 import { isEqual } from "lodash";
@@ -170,13 +170,20 @@ export async function getCommentsByFeedbackId({
 export const getRoadMapStatistics = async (): Promise<RoadMapStatsType[]> => {
   noStore();
   try {
-    const client = await clientPromise;
-    const collection = client.db("product-feedback").collection("feedbacks");
-    return await collection
-      .aggregate<RoadMapStatsType>([
-        { $group: { _id: "$status", count: { $sum: 1 } } },
-      ])
-      .toArray();
+    await mongooseConnect();
+    const result = await FeedbackModel.aggregate<RoadMapStatsType>([
+      { $group: { _id: "$status", count: { $sum: 1 } } },
+    ]);
+
+    const statusWithData = result.filter(
+      (item) => status.includes(item._id) && item?.count
+    );
+
+    const statusWithoutData = status
+      .filter((item) => !statusWithData.map((item) => item._id).includes(item))
+      .map((item) => ({ _id: item, count: 0 }));
+
+    return statusWithData.concat(statusWithoutData) as RoadMapStatsType[];
   } catch (error) {
     throw new Error(MESSAGES.SERVER_ERROR);
   }
@@ -192,25 +199,22 @@ export const getFeedbackByStatus = async (
   category: FeedbackType["status"]
 ): Promise<FeedbackSummary[]> => {
   try {
-    const client = await clientPromise;
-    const collection = client.db("product-feedback").collection("feedbacks");
-    const result = await collection
-      .aggregate<FeedbackSummary>([
-        { $match: { status: category } },
-        {
-          $addFields: {
-            totalComments: { $size: "$comments" },
-            totalVotes: { $size: "$upvotes" },
-          },
+    await mongooseConnect();
+    const result = await FeedbackModel.aggregate<FeedbackSummary>([
+      { $match: { status: category } },
+      {
+        $addFields: {
+          totalComments: { $size: "$comments" },
+          totalVotes: { $size: "$upvotes" },
         },
-        {
-          $project: {
-            comments: 0,
-            upvotes: 0,
-          },
+      },
+      {
+        $project: {
+          comments: 0,
+          upvotes: 0,
         },
-      ])
-      .toArray();
+      },
+    ]);
     return result;
   } catch (error) {
     throw new Error(MESSAGES.SERVER_ERROR);

@@ -1,7 +1,6 @@
 "use server";
 
 import { MESSAGES } from "@/constants/messages";
-import clientPromise from "@/lib/mongodb";
 import { mongooseConnect } from "@/lib/mongoose";
 import CommentModel, { ICommentModel } from "@/models/comment.model";
 import FeedbackModel, { IFeedbackModel } from "@/models/feedback.model";
@@ -14,6 +13,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { FeedbackType } from "../..";
 import { auth } from "../../auth";
+import { APP_ROUTES } from "@/constants";
 
 type FormState<T extends Record<string, any>> = {
   errors: Partial<Record<keyof T, string[]>> | null;
@@ -65,7 +65,7 @@ export async function addComments({
     });
     feedback.comments.unshift(comment.id);
     await feedback.save();
-    revalidatePath(`/feedback/${feedbackId}`);
+    revalidatePath(`${APP_ROUTES.HOME_PAGE}/${feedbackId}`);
     return { success: true, error: null };
   } catch (error: unknown) {
     return { success: false, error: MESSAGES.ADD_COMMENTS_ERROR };
@@ -92,7 +92,6 @@ export const postRepliesToComment = async ({
     await mongooseConnect();
     const session = await auth();
     const userId = session?.user.id;
-
     const feedback = await FeedbackModel.findById<FeedbackType>(
       { _id: feedbackId },
       { lean: false }
@@ -118,7 +117,7 @@ export const postRepliesToComment = async ({
     const reply = await CommentModel.create({ content, user: user.id });
     comment.comments.unshift(reply._id);
     await comment.save();
-    revalidatePath(`/feedback/${feedbackId}`);
+    revalidatePath(`${APP_ROUTES.HOME_PAGE}/${feedbackId}`);
     return { success: true, error: null };
   } catch (error: any) {
     return { success: false, error: MESSAGES.POST_REPLY_ERROR };
@@ -163,7 +162,7 @@ export const addLikes = async (
     }
 
     await feedback.save();
-    revalidatePath(`/feedback/${feedbackId}`);
+    revalidatePath(`${APP_ROUTES.HOME_PAGE}/${feedbackId}`);
     return { success: true, error: null };
   } catch (error: any) {
     return { success: false, error: MESSAGES.ADD_UPVOTES_ERROR };
@@ -209,19 +208,27 @@ export const createFeedback = async (
     const user = await UserModel.findOne<IUserModel>({
       _id: userId,
     });
+
+    if (isEmpty(user)) {
+      return {
+        errors: null,
+        formError: MESSAGES.FEEDBACK_CREATION_FAILURE,
+        status: "error",
+      };
+    }
     await FeedbackModel.create<IFeedbackModel>({
       ...validatedFields.data,
-      user,
+      user: user?.id,
     });
   } catch (error: any) {
     return {
       errors: null,
-      formError: "Failed to Create Feedback.",
+      formError: MESSAGES.FEEDBACK_CREATION_FAILURE,
       status: "error",
     };
   }
-  revalidatePath("/feedback");
-  redirect("/feedback");
+  revalidatePath(APP_ROUTES.HOME_PAGE);
+  redirect(APP_ROUTES.HOME_PAGE);
 };
 
 /**
@@ -236,8 +243,8 @@ export const createFeedback = async (
  */
 export const editFeedback = async (
   feedbackId: string,
-  status: string,
   category: string,
+  status: string,
   _state: CreateFeedbackFormState,
   formData: FormData
 ): Promise<CreateFeedbackFormState> => {
@@ -266,23 +273,45 @@ export const editFeedback = async (
     const user = await UserModel.findOne<IUserModel>({
       _id: userId,
     });
+    const feedback = await FeedbackModel.findOne<IFeedbackModel>({
+      _id: feedbackId,
+    });
+
+    if (isEmpty(feedback) || isEmpty(user)) {
+      return {
+        errors: null,
+        formError: isEmpty(feedback)
+          ? MESSAGES.FEEDBACK_UPDATE_FAILURE
+          : MESSAGES.USER_NOT_FOUND,
+        status: "error",
+      };
+    }
+
+    if (!isEqual(feedback?.user?._id?.toString(), userId)) {
+      return {
+        errors: null,
+        formError: MESSAGES.USER_NOT_AUTHORIZED,
+        status: "error",
+      };
+    }
+
     await FeedbackModel.updateOne<IFeedbackModel>(
       { _id: feedbackId },
       {
         ...validatedFields.data,
-        user,
+        user: user?.id,
       }
     );
   } catch (error: any) {
     return {
       errors: null,
-      formError: "Failed to Create Feedback.",
+      formError: MESSAGES.FEEDBACK_UPDATE_FAILURE,
       status: "error",
     };
   }
-  revalidatePath(`/feedback/${feedbackId}`);
-  revalidatePath(`/feedback`);
-  redirect(`/feedback/${feedbackId}`);
+  revalidatePath(`${APP_ROUTES.HOME_PAGE}/${feedbackId}`);
+  revalidatePath(APP_ROUTES.HOME_PAGE);
+  redirect(`${APP_ROUTES.HOME_PAGE}/${feedbackId}`);
 };
 
 /**
@@ -292,31 +321,45 @@ export const editFeedback = async (
  */
 export const deleteFeedback = async (feedbackId: string) => {
   try {
-    const client = await clientPromise;
-    const collection = client.db("product-feedback").collection("feedbacks");
-    const data = await collection
-      .aggregate<{ _id: ObjectId; comments: Array<{ _id: ObjectId }> }>([
-        { $match: { _id: new ObjectId(feedbackId) } },
-        {
-          $graphLookup: {
-            from: "comments",
-            startWith: "$comments",
-            connectFromField: "comments",
-            connectToField: "_id",
-            as: "comments",
-          },
-        },
-        {
-          $project: {
-            comments: { _id: 1 },
-          },
-        },
-      ])
-      .next();
+    await mongooseConnect();
+    const session = await auth();
+    const userId = session?.user.id;
+    const feedback = await FeedbackModel.findOne<IFeedbackModel>({
+      _id: feedbackId,
+    });
 
-    await collection.deleteOne({ _id: new ObjectId(feedbackId) });
+    if (!isEqual(feedback?.user?._id?.toString(), userId)) {
+      return {
+        errors: null,
+        formError: MESSAGES.USER_NOT_AUTHORIZED,
+        status: "error",
+      };
+    }
 
-    if (data && data?.comments?.length > 0) {
+    const result = await FeedbackModel.aggregate<{
+      _id: ObjectId;
+      comments: Array<{ _id: ObjectId }>;
+    }>([
+      { $match: { _id: new ObjectId(feedbackId) } },
+      {
+        $graphLookup: {
+          from: "comments",
+          startWith: "$comments",
+          connectFromField: "comments",
+          connectToField: "_id",
+          as: "comments",
+        },
+      },
+      {
+        $project: {
+          comments: { _id: 1 },
+        },
+      },
+    ]);
+    const data = result?.[0];
+    await FeedbackModel.deleteOne({ _id: new ObjectId(feedbackId) });
+
+    if (!isEmpty(data) && data?.comments?.length > 0) {
       const commentIds = data.comments.map((comment) => comment._id);
       await CommentModel.deleteMany({
         _id: {
@@ -335,9 +378,9 @@ export const deleteFeedback = async (feedbackId: string) => {
       );
     }
   } catch (error) {
-    throw new Error("failed to delete feedback");
+    throw new Error(MESSAGES.FEEDBACK_DELETE_FAILURE);
   }
 
-  revalidatePath(`/feedback`);
-  redirect(`/feedback`);
+  revalidatePath(APP_ROUTES.HOME_PAGE);
+  redirect(APP_ROUTES.HOME_PAGE);
 };

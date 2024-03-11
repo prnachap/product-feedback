@@ -7,10 +7,12 @@ const FormSubmissionButton = ({
   title,
   form,
   isLoading,
+  className,
 }: {
   title: string;
   form?: string;
   isLoading?: boolean;
+  className?: string;
 }) => {
   const { pending } = useFormStatus();
 
@@ -18,7 +20,7 @@ const FormSubmissionButton = ({
     <StyledButton
       form={form}
       className={clsx(
-        `btn-primary !min-h-[40px] flex items-center justify-center`
+        `btn-primary !min-h-[40px] flex items-center justify-center ${className}`
       )}
       type="submit"
       disabled={pending}

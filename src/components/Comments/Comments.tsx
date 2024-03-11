@@ -84,7 +84,7 @@ const Comments: React.FC<CommentsProps> = (props) => {
   const renderInput = () => {
     return openReplyForm ? (
       <div className="md:col-start-2 col-span-full mt-4 md:mt-6">
-        <ReplyBox commentId={_id} />
+        <ReplyBox commentId={_id} handleReplyForm={handleReplyForm} />
       </div>
     ) : null;
   };
