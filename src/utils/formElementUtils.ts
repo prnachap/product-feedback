@@ -5,6 +5,8 @@ If the 'title' is provided, it returns "Editing '{title}'" otherwise it returns 
 @returns {string} The generated form title.
 */
 
+import { isEqual } from "lodash";
+
 export const getFormTitle = (title: string = "") => {
   return title ? `Editing ‘${title}’` : "Create New Feedback";
 };
@@ -32,4 +34,11 @@ export function getRemainingWordCount(
 ): number {
   const remainingWords = maxWords - text?.length;
   return remainingWords > 0 ? remainingWords : 0;
+}
+
+export function getErrorText(error: string) {
+  if (isEqual(error, "OAuthAccountNotLinked")) {
+    return "this account is already linked with another social account, please use the other social account to login";
+  }
+  return error;
 }

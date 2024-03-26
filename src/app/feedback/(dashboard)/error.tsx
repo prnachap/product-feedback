@@ -21,7 +21,7 @@ const Error = ({
       <div className="hidden z-40 sticky md:top-10 md:flex md:flex-row md:justify-between md:gap-3 lg:top-14 lg:max-h-[30rem] lg:flex-col lg:gap-5">
         <FeedbackLogo />
         <TagsCard />
-        <RoadmapCard />
+        <RoadmapCard status={[]} />
       </div>
       <div className="flex flex-col w-full sticky top-28 ">
         <NavbarMobile />

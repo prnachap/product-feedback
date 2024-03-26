@@ -1,46 +1,42 @@
 "use client";
 
-import { registerAction } from "@/actions/auth.action";
 import { APP_ROUTES } from "@/constants";
-import useFocusOnFormError from "@/hooks/useFocusOnFormError";
+import { getErrorText } from "@/utils/formElementUtils";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import GoogleIcon from "@mui/icons-material/Google";
-import clsx from "clsx";
 import Link from "next/link";
-import { useRef } from "react";
-import { useFormState } from "react-dom";
+import { useSearchParams } from "next/navigation";
 import AlertCard from "../UI/AlertCard";
 import CustomCard from "../UI/CustomCard";
 import CustomDivider from "../UI/CustomDivider";
-import ErrorList from "./ErrorLists";
-import FormSubmissionButton from "./FormSubmissionButton";
-import Input from "./Input";
 
 const RegisterForm = () => {
-  const formRef = useRef<HTMLFormElement>(null);
-  const [formState, dispatch] = useFormState(registerAction, {
-    errors: null,
-    status: null,
-    formMessage: null,
-  });
+  const searchParams = useSearchParams();
+  const loginError = searchParams.get("error");
+  // const formRef = useRef<HTMLFormElement>(null);
+  // const [formState, dispatch] = useFormState(registerAction, {
+  //   errors: null,
+  //   status: null,
+  //   formMessage: null,
+  // });
 
-  const nameError = formState?.errors?.name;
-  const emailError = formState?.errors?.email;
-  const passwordError = formState?.errors?.password;
-  const formError = formState?.formMessage;
+  // const nameError = formState?.errors?.name;
+  // const emailError = formState?.errors?.email;
+  // const passwordError = formState?.errors?.password;
+  // const formError = formState?.formMessage;
 
-  const hasNameError = Boolean(nameError?.length);
-  const hasEmailError = Boolean(emailError?.length);
-  const hasPasswordError = Boolean(passwordError?.length);
-  const hasFormError = Boolean(formError);
-  const alertSeverity = formState.status === "error" ? "error" : "success";
+  // const hasNameError = Boolean(nameError?.length);
+  // const hasEmailError = Boolean(emailError?.length);
+  // const hasPasswordError = Boolean(passwordError?.length);
+  // const hasFormError = Boolean(formError);
+  // const alertSeverity = formState.status === "error" ? "error" : "success";
 
   // Focus on the first form element with an error
-  useFocusOnFormError({ errors: formState.errors, formRef });
+  // useFocusOnFormError({ errors: formState.errors, formRef });
 
   return (
     <CustomCard className="flex flex-col gap-4">
-      <form
+      {/* <form
         ref={formRef}
         id="register-form"
         action={dispatch}
@@ -95,7 +91,7 @@ const RegisterForm = () => {
           <AlertCard severity={alertSeverity} message={formState.formMessage} />
         )}
         <FormSubmissionButton title="Register" form="register-form" />
-      </form>
+      </form> */}
       <CustomDivider title="Or,Register with" />
       <div className="flex justify-between items-center gap-2">
         <button className="btn-tertiary !w-full">
@@ -114,6 +110,9 @@ const RegisterForm = () => {
           SignIn
         </Link>
       </div>
+      {loginError && (
+        <AlertCard severity={"error"} message={getErrorText(loginError)} />
+      )}
     </CustomCard>
   );
 };
