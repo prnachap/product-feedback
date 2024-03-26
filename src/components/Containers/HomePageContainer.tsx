@@ -29,7 +29,7 @@ const HomePageContainer = async ({
         </Suspense>
       </div>
       <div className="flex flex-col w-full sticky top-28 ">
-        <NavbarMobile />
+        <NavbarMobile status={status} />
         <div className="z-40 sticky top-[82.5px] md:top-[242px] lg:top-14">
           <CreateFeedbackBar />
         </div>

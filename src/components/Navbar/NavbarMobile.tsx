@@ -5,8 +5,9 @@ import { Fragment, useState } from "react";
 import AnimatedHamburgerIcon from "../AnimatedSvgIcons/AnimatedHamburgerIcon";
 import Overlay from "../Overlay/Overlay";
 import Sidebar from "../Sidebar/Sidebar";
+import { RoadMapStatsType } from "../../..";
 
-const NavbarMobile: React.FC = () => {
+const NavbarMobile = ({ status }: { status: RoadMapStatsType[] }) => {
   const [toggleSidebar, setToggleSidebar] = useState(false);
 
   const handleSideBar = () => setToggleSidebar((prevState) => !prevState);
@@ -17,7 +18,7 @@ const NavbarMobile: React.FC = () => {
         {toggleSidebar && (
           <Fragment>
             <Overlay />
-            <Sidebar />
+            <Sidebar status={status} />
           </Fragment>
         )}
       </AnimatePresence>

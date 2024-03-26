@@ -7,6 +7,7 @@ import React from "react";
 import RoadmapCard from "../RoadmapCard/RoadmapCard";
 import TagsCard from "../TagsCard/TagsCard";
 import CustomMenuItem from "../UI/CustomMenuItem";
+import { RoadMapStatsType } from "../../..";
 
 const sidebarVariants = {
   initial: {
@@ -29,7 +30,7 @@ const sidebarVariants = {
   },
 };
 
-const Sidebar: React.FC = () => {
+const Sidebar = ({ status }: { status: RoadMapStatsType[] }) => {
   return (
     <motion.div
       className="fixed top-40 left-0 h-full z-30 bg-ghost-white md:hidden"
@@ -52,7 +53,7 @@ const Sidebar: React.FC = () => {
           </CustomMenuItem>
         </div>
         <TagsCard />
-        <RoadmapCard />
+        <RoadmapCard status={status} />
       </Box>
     </motion.div>
   );

@@ -15,13 +15,15 @@ import Input from "./Input";
 const ResetForm = () => {
   const formRef = useRef<HTMLFormElement>(null);
   const [formState, dispatch] = useFormState(sendPasswordResetEmailAction, {
-    errors: null,
+    errors: {
+      email: [],
+    },
     status: null,
-    formError: null,
+    formMessage: null,
   });
 
   const emailError = formState?.errors?.email;
-  const formError = formState?.formError;
+  const formError = formState?.formMessage;
   const hasEmailError = Boolean(emailError?.length);
   const hasFormError = Boolean(formError);
   const alertSeverity = formState.status === "error" ? "error" : "success";
@@ -54,7 +56,7 @@ const ResetForm = () => {
           <ErrorList id="email-error" errors={emailError} />
         </div>
         {hasFormError && (
-          <AlertCard severity={alertSeverity} message={formState.formError} />
+          <AlertCard severity={alertSeverity} message={formState.formMessage} />
         )}
         <FormSubmissionButton title="Send reset email" form="login-form" />
       </form>

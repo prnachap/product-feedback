@@ -16,13 +16,15 @@ const PasswordResetForm = ({ token }: { token: string }) => {
   const formRef = useRef<HTMLFormElement>(null);
   const resetAction = resetPasswordAction.bind(null, token);
   const [formState, dispatch] = useFormState(resetAction, {
-    errors: null,
+    errors: {
+      password: [],
+    },
     status: null,
-    formError: null,
+    formMessage: null,
   });
 
   const passwordError = formState?.errors?.password;
-  const formError = formState?.formError;
+  const formError = formState?.formMessage;
   const hasPasswordError = Boolean(passwordError?.length);
   const hasFormError = Boolean(formError);
   const alertSeverity = formState.status === "error" ? "error" : "success";
@@ -55,7 +57,7 @@ const PasswordResetForm = ({ token }: { token: string }) => {
           <ErrorList id="password-error" errors={passwordError} />
         </div>
         {hasFormError && (
-          <AlertCard severity={alertSeverity} message={formState.formError} />
+          <AlertCard severity={alertSeverity} message={formState.formMessage} />
         )}
         <FormSubmissionButton title="Reset Password" form="login-form" />
       </form>
